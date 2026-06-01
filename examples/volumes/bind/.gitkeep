@@ -1,0 +1,2 @@
+# Esta carpeta se monta como bind mount en el contenedor (/bind).
+# Los ficheros que escribe el contenedor apareceran aqui mismo.

@@ -1,0 +1,6 @@
+{
+  "slug": "redes",
+  "title": "Redes",
+  "order": 6,
+  "summary": "El modelo de red de Docker: bridge, host, none, overlay, DNS."
+}

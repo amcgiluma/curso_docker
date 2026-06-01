@@ -1,0 +1,6 @@
+{
+  "slug": "registries",
+  "title": "Registries",
+  "order": 10,
+  "summary": "Publicar y distribuir imagenes: tag, push, pull y registros privados."
+}

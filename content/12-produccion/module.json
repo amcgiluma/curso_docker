@@ -1,0 +1,6 @@
+{
+  "slug": "produccion",
+  "title": "Produccion y buenas practicas",
+  "order": 12,
+  "summary": "PID 1, healthchecks, restart policies, logging y checklist 12-factor."
+}

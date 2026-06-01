@@ -1,0 +1,46 @@
+# Stack de DESARROLLO con hot reload.
+#   docker compose -f docker-compose.dev.yml up --build
+#   -> frontend (Vite) en http://localhost:5173
+#   -> backend  (FastAPI --reload) en http://localhost:8000
+#
+# Los bind mounts permiten editar codigo y contenido sin reconstruir la imagen.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: development
+    environment:
+      CONTENT_DIR: /content
+      CORS_ORIGINS: http://localhost:5173
+    volumes:
+      - ./backend/app:/app/app
+      - ./content:/content:ro
+    ports:
+      - "8000:8000"
+    networks:
+      - app
+
+  frontend:
+    build:
+      context: ./frontend
+      target: development
+    environment:
+      # En dev, Vite proxya /api hacia el backend usando el nombre de servicio.
+      VITE_API_PROXY_TARGET: http://backend:8000
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      # Evita que el node_modules del host pise el del contenedor.
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge

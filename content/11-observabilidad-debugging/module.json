@@ -1,0 +1,6 @@
+{
+  "slug": "observabilidad-debugging",
+  "title": "Observabilidad y debugging",
+  "order": 11,
+  "summary": "logs, events, inspect, stats y como depurar contenedores."
+}

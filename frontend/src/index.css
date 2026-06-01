@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ocean-50: #eef6ff;
+  --color-ocean-100: #d9eaff;
+  --color-ocean-200: #bcd9ff;
+  --color-ocean-300: #8ec1ff;
+  --color-ocean-400: #599eff;
+  --color-ocean-500: #2e7bff;
+  --color-ocean-600: #1f5fe6;
+  --color-ocean-700: #1b4bbd;
+  --color-ocean-800: #1c4099;
+  --color-ocean-900: #1c3a7a;
+
+  --color-ink-900: #0b1220;
+  --color-ink-800: #111a2e;
+  --color-ink-700: #1a2540;
+  --color-ink-600: #25324f;
+
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(46, 123, 255, 0.18), transparent),
+    radial-gradient(900px 500px at -10% 10%, rgba(28, 58, 122, 0.25), transparent),
+    var(--color-ink-900);
+  color: #e6ecf5;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-600) transparent;
+}
+
+/* ---- Prose (markdown) styles ---- */
+.prose-docker {
+  line-height: 1.7;
+  color: #d7deea;
+}
+.prose-docker h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+.prose-docker h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 2rem 0 0.75rem;
+  color: #f3f6fb;
+  border-bottom: 1px solid var(--color-ink-600);
+  padding-bottom: 0.4rem;
+}
+.prose-docker h3 {
+  font-size: 1.12rem;
+  font-weight: 700;
+  margin: 1.5rem 0 0.5rem;
+  color: #eaf0f8;
+}
+.prose-docker p {
+  margin: 0.75rem 0;
+}
+.prose-docker ul,
+.prose-docker ol {
+  margin: 0.75rem 0;
+  padding-left: 1.4rem;
+}
+.prose-docker li {
+  margin: 0.3rem 0;
+}
+.prose-docker a {
+  color: var(--color-ocean-300);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose-docker strong {
+  color: #ffffff;
+}
+.prose-docker blockquote {
+  border-left: 3px solid var(--color-ocean-500);
+  background: rgba(46, 123, 255, 0.08);
+  margin: 1rem 0;
+  padding: 0.6rem 1rem;
+  border-radius: 0 8px 8px 0;
+  color: #cbd6e8;
+}
+.prose-docker code:not(pre code) {
+  background: var(--color-ink-700);
+  border: 1px solid var(--color-ink-600);
+  padding: 0.12rem 0.4rem;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  color: #ffd9a8;
+}
+.prose-docker table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+.prose-docker th,
+.prose-docker td {
+  border: 1px solid var(--color-ink-600);
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+}
+.prose-docker th {
+  background: var(--color-ink-700);
+  color: #fff;
+}
+.prose-docker hr {
+  border: none;
+  border-top: 1px solid var(--color-ink-600);
+  margin: 2rem 0;
+}

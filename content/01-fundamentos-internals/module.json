@@ -1,0 +1,6 @@
+{
+  "slug": "fundamentos-internals",
+  "title": "Fundamentos e internals",
+  "order": 1,
+  "summary": "Como funciona Docker por dentro: daemon, namespaces, cgroups y capas."
+}

@@ -1,0 +1,81 @@
+# Stack de PRODUCCION del curso de Docker.
+#   docker compose up --build -d
+#   -> frontend (nginx) en http://localhost:8080
+#
+# El servicio `db` es opcional y se usa como caso de practica del modulo de
+# Compose/persistencia. Actívalo con:  docker compose --profile db up
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: production
+    image: curso-docker/backend:latest
+    environment:
+      CONTENT_DIR: /content
+      CORS_ORIGINS: http://localhost:8080
+    volumes:
+      # El contenido se monta de solo lectura: editar lecciones no requiere rebuild.
+      - ./content:/content:ro
+    networks:
+      - app
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/api/health').status==200 else 1)
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+
+  frontend:
+    build:
+      context: ./frontend
+      target: production
+    image: curso-docker/frontend:latest
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    networks:
+      - app
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+
+  # Base de datos opcional para los ejercicios del modulo de Compose.
+  db:
+    image: postgres:16-alpine
+    profiles: ["db"]
+    environment:
+      POSTGRES_USER: curso
+      POSTGRES_PASSWORD: curso
+      POSTGRES_DB: curso
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U curso"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  app:
+    driver: bridge
+
+volumes:
+  pgdata:

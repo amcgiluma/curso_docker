@@ -1,0 +1,6 @@
+{
+  "slug": "proyecto-final",
+  "title": "Proyecto final",
+  "order": 13,
+  "summary": "Dockerizar la plataforma del curso (React + FastAPI) en dev y prod."
+}

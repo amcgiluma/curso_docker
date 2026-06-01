@@ -1,0 +1,6 @@
+{
+  "slug": "almacenamiento",
+  "title": "Almacenamiento y datos",
+  "order": 5,
+  "summary": "Volumes, bind mounts, tmpfs y persistencia de datos."
+}

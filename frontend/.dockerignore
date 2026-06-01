@@ -1,0 +1,9 @@
+node_modules
+dist
+.vite
+# Generado solo para el deploy estatico (Vercel); en Docker usamos la API.
+public/content.json
+npm-debug.log*
+Dockerfile
+.dockerignore
+.git

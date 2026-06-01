@@ -1,0 +1,6 @@
+{
+  "slug": "build-avanzado",
+  "title": "Build avanzado (BuildKit y buildx)",
+  "order": 9,
+  "summary": "BuildKit, buildx, multi-arch, cache y secret/ssh mounts."
+}

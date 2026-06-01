@@ -1,0 +1,36 @@
+# Version control
+.git
+.gitignore
+
+# Docs / plans
+*.md
+docs/
+.cursor/
+.agents/
+
+# Node
+**/node_modules
+**/dist
+**/build
+**/.vite
+npm-debug.log*
+
+# Python
+**/__pycache__
+**/*.pyc
+**/.venv
+**/venv
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+
+# Env / secrets
+**/.env
+**/.env.*
+secrets/
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db

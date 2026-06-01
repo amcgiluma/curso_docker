@@ -1,0 +1,22 @@
+services:
+  servidor:
+    image: nginx:alpine
+    container_name: net-servidor
+    networks:
+      - red-curso
+    # No publicamos puertos al host: la comunicacion es interna por DNS.
+
+  cliente:
+    image: alpine:3.20
+    container_name: net-cliente
+    depends_on:
+      - servidor
+    networks:
+      - red-curso
+    # Se mantiene vivo para poder hacer exec y probar la resolucion DNS.
+    command: ["sleep", "infinity"]
+
+networks:
+  red-curso:
+    driver: bridge
+    name: red-curso

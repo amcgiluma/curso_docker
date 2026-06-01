@@ -1,0 +1,21 @@
+services:
+  escritor:
+    image: alpine:3.20
+    container_name: vol-escritor
+    volumes:
+      # 1) Volumen NOMBRADO: lo gestiona Docker. Persiste aunque se borre el contenedor.
+      - datos-app:/data
+      # 2) BIND MOUNT: carpeta del host montada en el contenedor.
+      - ./bind:/bind
+    command:
+      - sh
+      - -c
+      - |
+        echo "Contenedor iniciado: $(date -u)" >> /bind/inicios.txt
+        while true; do
+          echo "$(date -u +%H:%M:%S) - linea persistida" >> /data/registro.log
+          sleep 5
+        done
+
+volumes:
+  datos-app:

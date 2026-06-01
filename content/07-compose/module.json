@@ -1,0 +1,6 @@
+{
+  "slug": "compose",
+  "title": "Docker Compose a fondo",
+  "order": 7,
+  "summary": "Orquestacion local: servicios, redes, volumenes, profiles, secrets."
+}
