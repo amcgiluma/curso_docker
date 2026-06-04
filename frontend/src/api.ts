@@ -32,6 +32,13 @@ type Mode = "static" | "api";
 let mode: Mode | null = null;
 let staticModules: StaticModule[] | null = null;
 
+export function normalizeSlug(slug: string): string {
+  return slug
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
 async function detectMode(): Promise<Mode> {
   if (mode) return mode;
   try {
@@ -90,8 +97,14 @@ export async function fetchLesson(
   lessonSlug: string
 ): Promise<Lesson> {
   if ((await detectMode()) === "static" && staticModules) {
-    const mod = staticModules.find((m) => m.slug === moduleSlug);
-    const lesson = mod?.lessons.find((l) => l.slug === lessonSlug);
+    const normalizedModuleSlug = normalizeSlug(moduleSlug);
+    const normalizedLessonSlug = normalizeSlug(lessonSlug);
+    const mod = staticModules.find(
+      (m) => normalizeSlug(m.slug) === normalizedModuleSlug
+    );
+    const lesson = mod?.lessons.find(
+      (l) => normalizeSlug(l.slug) === normalizedLessonSlug
+    );
     if (!lesson) {
       throw new Error("Leccion no encontrada");
     }

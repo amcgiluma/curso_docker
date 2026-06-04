@@ -16,12 +16,19 @@ from __future__ import annotations
 
 import json
 import os
+import unicodedata
 from functools import lru_cache
 from pathlib import Path
 
 import yaml
 
 from .models import Lesson, LessonMeta, ModuleMeta
+
+
+def normalize_slug(slug: str) -> str:
+    """Normaliza slugs legacy que pudieron guardarse con acentos."""
+    decomposed = unicodedata.normalize("NFD", slug)
+    return "".join(ch for ch in decomposed if unicodedata.category(ch) != "Mn").lower()
 
 
 def content_dir() -> Path:
@@ -120,9 +127,30 @@ def get_lesson(module_slug: str, lesson_slug: str) -> Lesson | None:
     index = _load_index()
     entry = index.get(module_slug)
     if not entry:
+        normalized_module_slug = normalize_slug(module_slug)
+        entry = next(
+            (
+                module_entry
+                for slug, module_entry in index.items()
+                if normalize_slug(slug) == normalized_module_slug
+            ),
+            None,
+        )
+    if not entry:
         return None
     module, bodies = entry
     body = bodies.get(lesson_slug)
+    if body is None:
+        normalized_lesson_slug = normalize_slug(lesson_slug)
+        lesson_slug = next(
+            (
+                slug
+                for slug in bodies
+                if normalize_slug(slug) == normalized_lesson_slug
+            ),
+            lesson_slug,
+        )
+        body = bodies.get(lesson_slug)
     if body is None:
         return None
     meta = next((l for l in module.lessons if l.slug == lesson_slug), None)

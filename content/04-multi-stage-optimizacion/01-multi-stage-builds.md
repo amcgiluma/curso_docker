@@ -36,6 +36,13 @@ module example.com/curso-docker/go-multi-stage
 go 1.23
 ```
 
+Si quieres evitar copiar y pegar este fichero, clona el repositorio del curso y entra directamente en el ejemplo preparado:
+
+```bash
+git clone https://github.com/amcgiluma/curso_docker.git
+cd curso_docker/examples/go-multi-stage
+```
+
 Luego crea `cmd/app/main.go`:
 
 ```go
@@ -73,6 +80,8 @@ func main() {
 }
 ```
 
+El código anterior ya está dentro del repositorio en `examples/go-multi-stage/cmd/app/main.go`. Si has usado `git clone`, no tienes que crearlo a mano.
+
 El `Dockerfile` principal compila la aplicación Go y deja en runtime solo Alpine + el binario:
 
 ```dockerfile
@@ -89,6 +98,8 @@ COPY --from=build /bin/app /usr/local/bin/app
 EXPOSE 8080
 ENTRYPOINT ["app"]
 ```
+
+Este `Dockerfile` también está incluido en `examples/go-multi-stage/Dockerfile` dentro del repositorio clonado.
 
 Conceptos:
 

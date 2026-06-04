@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { fetchLesson, type Lesson, type ModuleMeta } from "../api";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import {
+  fetchLesson,
+  normalizeSlug,
+  type Lesson,
+  type ModuleMeta,
+} from "../api";
 import { Markdown } from "../components/Markdown";
 import { useProgress } from "../hooks/useProgress";
 
@@ -26,28 +31,61 @@ function flatten(modules: ModuleMeta[]): FlatLesson[] {
 
 export function LessonPage({ modules }: { modules: ModuleMeta[] }) {
   const { moduleSlug, lessonSlug } = useParams();
+  const navigate = useNavigate();
   const [lesson, setLesson] = useState<Lesson | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { isDone, toggle } = useProgress();
 
   const flat = useMemo(() => flatten(modules), [modules]);
-  const idx = flat.findIndex(
-    (l) => l.moduleSlug === moduleSlug && l.lessonSlug === lessonSlug
-  );
+  const routeLesson = useMemo(() => {
+    if (!moduleSlug || !lessonSlug) return null;
+    const exact = flat.find(
+      (l) => l.moduleSlug === moduleSlug && l.lessonSlug === lessonSlug
+    );
+    if (exact) return exact;
+
+    const normalizedModuleSlug = normalizeSlug(moduleSlug);
+    const normalizedLessonSlug = normalizeSlug(lessonSlug);
+    return (
+      flat.find(
+        (l) =>
+          normalizeSlug(l.moduleSlug) === normalizedModuleSlug &&
+          normalizeSlug(l.lessonSlug) === normalizedLessonSlug
+      ) ?? null
+    );
+  }, [flat, moduleSlug, lessonSlug]);
+  const activeModuleSlug = routeLesson?.moduleSlug ?? moduleSlug;
+  const activeLessonSlug = routeLesson?.lessonSlug ?? lessonSlug;
+  const idx = routeLesson ? flat.indexOf(routeLesson) : -1;
   const prev = idx > 0 ? flat[idx - 1] : null;
   const next = idx >= 0 && idx < flat.length - 1 ? flat[idx + 1] : null;
 
   useEffect(() => {
-    if (!moduleSlug || !lessonSlug) return;
+    if (!activeModuleSlug || !activeLessonSlug) return;
+    if (
+      routeLesson &&
+      (routeLesson.moduleSlug !== moduleSlug || routeLesson.lessonSlug !== lessonSlug)
+    ) {
+      navigate(`/m/${routeLesson.moduleSlug}/${routeLesson.lessonSlug}`, {
+        replace: true,
+      });
+    }
     setLesson(null);
     setError(null);
     window.scrollTo({ top: 0 });
-    fetchLesson(moduleSlug, lessonSlug)
+    fetchLesson(activeModuleSlug, activeLessonSlug)
       .then(setLesson)
       .catch((e: unknown) =>
         setError(e instanceof Error ? e.message : "Error desconocido")
       );
-  }, [moduleSlug, lessonSlug]);
+  }, [
+    activeModuleSlug,
+    activeLessonSlug,
+    moduleSlug,
+    lessonSlug,
+    navigate,
+    routeLesson,
+  ]);
 
   if (error) {
     return (
@@ -57,11 +95,11 @@ export function LessonPage({ modules }: { modules: ModuleMeta[] }) {
     );
   }
 
-  if (!lesson || !moduleSlug || !lessonSlug) {
+  if (!lesson || !activeModuleSlug || !activeLessonSlug) {
     return <p className="text-slate-400">Cargando leccion...</p>;
   }
 
-  const done = isDone(moduleSlug, lessonSlug);
+  const done = isDone(activeModuleSlug, activeLessonSlug);
 
   return (
     <article>
@@ -70,7 +108,7 @@ export function LessonPage({ modules }: { modules: ModuleMeta[] }) {
       <div className="mt-10 flex items-center justify-between border-t border-ink-600 pt-5">
         <button
           type="button"
-          onClick={() => toggle(moduleSlug, lessonSlug)}
+          onClick={() => toggle(activeModuleSlug, activeLessonSlug)}
           className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
             done
               ? "border border-emerald-600 bg-emerald-600/20 text-emerald-300"
