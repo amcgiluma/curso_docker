@@ -7,7 +7,12 @@ summary: "Retos prácticos para optimizar imágenes con multi-stage, bases míni
 
 # Examen práctico
 
-Este examen usa `examples/go-multi-stage/` para comprobar si sabes reducir tamaño sin perder reproducibilidad.
+Este examen usa `examples/go-multi-stage/` para comprobar si sabes reducir tamaño sin perder reproducibilidad. Puedes usarlo desde este repo o clonarlo en una máquina de pruebas:
+
+```bash
+git clone https://github.com/amcgiluma/curso_docker.git
+cd curso_docker/examples/go-multi-stage
+```
 
 ## Retos
 

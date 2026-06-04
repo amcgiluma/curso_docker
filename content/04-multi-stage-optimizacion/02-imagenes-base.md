@@ -28,11 +28,22 @@ Matices que importan:
 
 ## Manos a la obra
 
-Entra en el ejemplo Go:
+Prepara el ejemplo Go con una de estas dos opciones.
+
+**Opción A: clonar el repositorio del curso en tu máquina de pruebas.**
+
+```bash
+git clone https://github.com/amcgiluma/curso_docker.git
+cd curso_docker/examples/go-multi-stage
+```
+
+**Opción B: usar esta misma copia del curso.**
 
 ```bash
 cd examples/go-multi-stage
 ```
+
+También puedes copiar los archivos desde la lección anterior (`go.mod`, `cmd/app/main.go`, `Dockerfile` y `Dockerfile.scratch`) si quieres practicar en una carpeta vacía.
 
 Construye la variante Alpine:
 
@@ -101,7 +112,7 @@ NAME="Alpine Linux"
 
 ## Pruébalo tú
 
-1. Entra en `examples/go-multi-stage`.
+1. Prepara el ejemplo con `git clone https://github.com/amcgiluma/curso_docker.git && cd curso_docker/examples/go-multi-stage`, o entra en `examples/go-multi-stage` si ya tienes este repo descargado.
 2. Construye `curso/go-base:alpine` con el `Dockerfile` principal.
 3. Construye `curso/go-base:scratch` con `Dockerfile.scratch`.
 4. Compara tamaños con `docker images`.

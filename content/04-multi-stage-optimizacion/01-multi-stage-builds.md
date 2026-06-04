@@ -13,13 +13,67 @@ Un build multi-stage usa **varias etapas `FROM`** en un mismo Dockerfile: una pa
 
 La idea: en la etapa de build instalas todo lo necesario para compilar; en la etapa final copias **solo el artefacto** resultante con `COPY --from`. Las etapas intermedias no acaban en la imagen publicada.
 
-El ejemplo completo está en `examples/go-multi-stage/`. Si estás siguiendo el curso desde GitHub, puedes entrar directamente en esa carpeta:
+Tienes dos formas de preparar el ejemplo:
+
+**Opción A: clonar el repositorio del curso en tu máquina de pruebas.**
+
+```bash
+git clone https://github.com/amcgiluma/curso_docker.git
+cd curso_docker/examples/go-multi-stage
+```
+
+**Opción B: usar esta misma copia del curso.** Si ya tienes el repositorio descargado, entra directamente en la carpeta del ejemplo:
 
 ```bash
 cd examples/go-multi-stage
 ```
 
-El Dockerfile principal compila una aplicación Go y deja en runtime solo Alpine + el binario:
+Si prefieres no clonar nada, copia estos archivos en una carpeta vacía. Primero crea `go.mod`:
+
+```text
+module example.com/curso-docker/go-multi-stage
+
+go 1.23
+```
+
+Luego crea `cmd/app/main.go`:
+
+```go
+package main
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+	"runtime"
+	"time"
+)
+
+func main() {
+	if len(os.Args) > 1 && os.Args[1] == "serve" {
+		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "hola desde Go en Docker\narch=%s os=%s\n", runtime.GOARCH, runtime.GOOS)
+		})
+		http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			fmt.Fprintln(w, "ok")
+		})
+		server := &http.Server{
+			Addr:              ":8080",
+			ReadHeaderTimeout: 5 * time.Second,
+		}
+		if err := server.ListenAndServe(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	fmt.Printf("hola desde Go en Docker\narch=%s os=%s\n", runtime.GOARCH, runtime.GOOS)
+}
+```
+
+El `Dockerfile` principal compila la aplicación Go y deja en runtime solo Alpine + el binario:
 
 ```dockerfile
 # syntax=docker/dockerfile:1
@@ -34,21 +88,6 @@ FROM alpine:3.20
 COPY --from=build /bin/app /usr/local/bin/app
 EXPOSE 8080
 ENTRYPOINT ["app"]
-```
-
-La aplicación mínima que compila ese Dockerfile es:
-
-```go
-package main
-
-import (
-	"fmt"
-	"runtime"
-)
-
-func main() {
-	fmt.Printf("hola desde Go en Docker\narch=%s os=%s\n", runtime.GOARCH, runtime.GOOS)
-}
 ```
 
 Conceptos:
@@ -127,7 +166,7 @@ user  nginx;
 
 ## Pruébalo tú
 
-1. Entra en `examples/go-multi-stage`.
+1. Prepara el ejemplo con una de las dos opciones: `git clone https://github.com/amcgiluma/curso_docker.git && cd curso_docker/examples/go-multi-stage`, o copia los archivos de esta lección en una carpeta vacía.
 2. Construye `docker build -t curso/go-multi-stage:alpine .`.
 3. Ejecuta `docker run --rm curso/go-multi-stage:alpine`.
 4. Construye solo la etapa de build con `docker build --target build -t curso/go-multi-stage:builder .`.

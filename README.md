@@ -32,7 +32,8 @@ además, un caso real de dockerización que estudiarás en el último módulo.
 | 13 | Proyecto final | Dockerizar esta misma plataforma (dev y prod) y repaso |
 
 Además, `examples/` incluye casos de práctica autocontenidos: `node-app`,
-`python-app`, `nginx`, `networking`, `volumes` y `multi-arch`.
+`python-app`, `nginx`, `networking`, `volumes`, `go-multi-stage`,
+`buildx-bake` y `multi-arch`.
 
 ---
 
@@ -116,7 +117,7 @@ Abre http://localhost:5173 (Vite proxya `/api` al backend en el puerto 8000).
 │   └── ...
 └── examples/               # Casos de práctica autocontenidos
     ├── node-app/  python-app/  nginx/
-    └── networking/  volumes/  multi-arch/
+    └── networking/  volumes/  go-multi-stage/  buildx-bake/  multi-arch/
 ```
 
 ---
