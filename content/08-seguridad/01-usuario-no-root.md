@@ -2,14 +2,14 @@
 title: "Ejecutar como usuario no root"
 slug: "usuario-no-root"
 order: 1
-summary: "USER, UID/GID propios y por que no conviene correr contenedores como root."
+summary: "USER, UID/GID propios y por qué no conviene correr contenedores como root."
 ---
 
 # Ejecutar como usuario no root
 
-Por defecto, los contenedores corren como **root** (UID 0). Si un atacante escapa del proceso, hereda privilegios de root, y si ademas escapa del contenedor, puede ser root en el host. La primera regla de hardening es no correr como root.
+Por defecto, los contenedores corren como **root** (UID 0). Si un atacante escapa del proceso, hereda privilegios de root, y si además escapa del contenedor, puede ser root en el host. La primera regla de hardening es no correr como root.
 
-## Teoria
+## Teoría
 
 El usuario del contenedor se mapea al kernel del host (salvo que uses *user namespaces*). Un proceso root dentro del contenedor es, en muchos aspectos, root respecto a los recursos montados (por ejemplo, ficheros de un bind mount).
 
@@ -19,7 +19,7 @@ Para evitarlo:
 - Cambia a ese usuario con la instruccion **`USER`** antes del `CMD`.
 - Asegura que el usuario tenga permisos sobre lo que necesita (usa `COPY --chown`).
 
-Por que un UID **fijo y alto** (no solo "appuser"): el nombre es cosmetico; lo que importa es el numero. Un UID fijo facilita asignar permisos en volumes y evita colisiones con usuarios del host.
+Por qué un UID **fijo y alto** (no solo "appuser"): el nombre es cosmetico; lo que importa es el número. Un UID fijo fácilita asignar permisos en volumes y evita colisiones con usuarios del host.
 
 > En Alpine se usa `adduser`/`addgroup`; en Debian/Ubuntu, `useradd`/`groupadd`. El efecto es el mismo: crear un usuario sin privilegios.
 
@@ -56,7 +56,7 @@ docker run --rm alpine:3.20 id
 uid=0(root) gid=0(root) groups=0(root),...
 ```
 
-Tambien puedes forzar el usuario en tiempo de ejecucion sin tocar la imagen:
+También puedes forzar el usuario en tiempo de ejecución sin tocar la imagen:
 
 ```compare
 # CMD
@@ -67,19 +67,19 @@ uid=10001 gid=10001 groups=10001
 
 ## Flags y variantes
 
-| Elemento | Que hace |
+| Elemento | Qué hace |
 | --- | --- |
 | `USER <usuario>` | Cambia el usuario para las siguientes instrucciones y el `CMD` |
 | `USER <uid>:<gid>` | Usa UID/GID numericos (recomendado, no depende de /etc/passwd) |
-| `RUN adduser -S -u 10001 ...` | (Alpine) crea usuario de sistema sin contrasena |
+| `RUN adduser -S -u 10001 ...` | (Alpine) crea usuario de sistema sin contraseña |
 | `RUN useradd -u 10001 -r ...` | (Debian/Ubuntu) crea usuario de sistema |
 | `COPY --chown=user:group` | Copia ficheros con el propietario adecuado |
 | `--user 10001:10001` (run) | Fuerza el usuario al ejecutar, sin cambiar la imagen |
-| `--user $(id -u):$(id -g)` | Usa tu UID/GID del host (util con bind mounts) |
+| `--user $(id -u):$(id -g)` | Usa tu UID/GID del host (útil con bind mounts) |
 
-## Pruebalo tu
+## Pruébalo tú
 
-1. Crea el `Dockerfile` del ejemplo en una carpeta vacia (anade un fichero cualquiera para el `COPY`).
+1. Crea el `Dockerfile` del ejemplo en una carpeta vacía (añade un fichero cualquiera para el `COPY`).
 2. Construye: `docker build -t demo-nonroot .`.
 3. Ejecuta `docker run --rm demo-nonroot`: debe mostrar `uid=10001`.
 4. Comprueba el contraste con `docker run --rm alpine:3.20 id` (uid=0).
@@ -88,7 +88,7 @@ uid=10001 gid=10001 groups=10001
 ## Errores comunes
 
 - **`Permission denied` al escribir tras poner `USER`**: el usuario no root no tiene permisos sobre el directorio. Usa `COPY --chown` o ajusta permisos con `RUN chown` antes del `USER`.
-- **No puede escuchar en puertos < 1024**: como no root, no puedes bindear puertos privilegiados dentro del contenedor. Usa un puerto alto (p. ej. 8080) y publicalo con `-p 80:8080`.
+- **No puede escuchar en puertos < 1024**: como no root, no puedes bindear puertos privilegiados dentro del contenedor. Usa un puerto alto (p. ej. 8080) y publícalo con `-p 80:8080`.
 - **El `USER` no aplica a `RUN` posteriores que necesitan root**: coloca las instrucciones que requieren root (instalar paquetes) **antes** del `USER`.
 - **Volumes con propietario root**: si montas un volume nuevo, su contenido puede pertenecer a root; ajusta permisos o usa `--user` coherente con el del host.
 

@@ -1,27 +1,27 @@
 ---
-title: "Que es BuildKit"
+title: "Qué es BuildKit"
 slug: "buildkit"
 order: 1
-summary: "BuildKit, DOCKER_BUILDKIT y las mejoras frente al builder clasico."
+summary: "BuildKit, DOCKER_BUILDKIT y las mejoras frente al builder clásico."
 ---
 
-# Que es BuildKit
+# Qué es BuildKit
 
-**BuildKit** es el motor de construccion moderno de Docker. Sustituye al builder clasico y aporta builds mas rapidos, cache inteligente, ejecucion en paralelo y nuevas capacidades como los `--mount` de cache, secret y ssh.
+**BuildKit** es el motor de construcción moderno de Docker. Sustituye al builder clásico y aporta builds más rápidos, cache inteligente, ejecución en paralelo y nuevas capacidades como los `--mount` de cache, secret y ssh.
 
-## Teoria
+## Teoría
 
-El builder antiguo procesaba el Dockerfile de forma lineal, capa a capa. BuildKit construye un **grafo de dependencias** y:
+El builder antiguo procesaba el Dockerfile de forma líneal, capa a capa. BuildKit construye un **grafo de dependencias** y:
 
 - **Paraleliza** etapas independientes de un multi-stage build.
 - **Salta** etapas que no se necesitan para el `target` solicitado.
-- Tiene una **cache** mas granular y exportable/importable.
+- Tiene una **cache** más granular y exportable/importable.
 - Soporta `RUN --mount` para **cache de paquetes**, **secretos** y **claves ssh** sin dejarlos en la imagen.
-- Muestra una salida mas clara y resumida.
+- Muestra una salida más clara y resumida.
 
-En Docker moderno (Docker Desktop y Engine recientes) **BuildKit ya es el motor por defecto**. En instalaciones antiguas se activaba con la variable `DOCKER_BUILDKIT=1`. Para usar la sintaxis mas reciente del Dockerfile conviene declarar la cabecera `# syntax=docker/dockerfile:1`.
+En Docker moderno (Docker Desktop y Engine recientes) **BuildKit ya es el motor por defecto**. En instalaciones antiguas se activaba con la variable `DOCKER_BUILDKIT=1`. Para usar la sintaxis más reciente del Dockerfile conviene declarar la cabecera `# syntax=docker/dockerfile:1`.
 
-> `docker build` usa BuildKit por defecto; `docker buildx build` siempre usa BuildKit y anade funciones extra (multi-plataforma, builders remotos), que veras en las siguientes lecciones.
+> `docker build` usa BuildKit por defecto; `docker buildx build` siempre usa BuildKit y añade funciones extra (multi-plataforma, builders remotos), que verás en las siguientes lecciones.
 
 ## Manos a la obra
 
@@ -56,7 +56,7 @@ docker build -t demo-buildkit .
  => => naming to docker.io/library/demo-buildkit
 ```
 
-Si tu Docker fuese antiguo, activarias BuildKit asi (en PowerShell):
+Si tu Docker fuese antiguo, activarias BuildKit así (en PowerShell):
 
 ```bash
 $env:DOCKER_BUILDKIT=1
@@ -74,30 +74,30 @@ github.com/docker/buildx v0.<x>.<y> <hash>
 
 ## Flags y variantes
 
-| Elemento | Que hace |
+| Elemento | Qué hace |
 | --- | --- |
-| `# syntax=docker/dockerfile:1` | Usa la ultima sintaxis estable del Dockerfile (frontend) |
+| `# syntax=docker/dockerfile:1` | Usa la última sintaxis estable del Dockerfile (frontend) |
 | `DOCKER_BUILDKIT=1` | Activa BuildKit en Docker antiguos (hoy es el por defecto) |
-| `DOCKER_BUILDKIT=0` | Fuerza el builder clasico (legacy) |
+| `DOCKER_BUILDKIT=0` | Fuerza el builder clásico (legacy) |
 | `RUN --mount=type=cache,target=<ruta>` | Cache persistente entre builds (no va a la imagen) |
 | `RUN --mount=type=bind,...` | Monta ficheros del contexto solo durante el `RUN` |
-| `--progress=plain` | Muestra la salida completa, util para depurar |
+| `--progress=plain` | Muestra la salida completa, útil para depurar |
 | `--no-cache` | Ignora la cache y reconstruye todo |
-| `docker buildx version` | Comprueba la version de buildx |
+| `docker buildx version` | Comprueba la versión de buildx |
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Crea el `Dockerfile` del ejemplo con `# syntax=docker/dockerfile:1` y un `requirements.txt` con alguna dependencia (p. ej. `requests`).
-2. Construye con `docker build -t demo-buildkit .` y fijate en la salida tipo grafo de BuildKit.
-3. Vuelve a construir sin cambiar nada: notaras que reutiliza cache y va mucho mas rapido.
+2. Construye con `docker build -t demo-buildkit .` y fíjate en la salida tipo grafo de BuildKit.
+3. Vuelve a construir sin cambiar nada: notaras que reútiliza cache y va mucho más rápido.
 4. Ejecuta con `--progress=plain` para ver la salida detallada de cada paso.
-5. Comprueba tu version con `docker buildx version`.
+5. Comprueba tu versión con `docker buildx version`.
 
 ## Errores comunes
 
-- **`the --mount option requires BuildKit`**: estas en el builder clasico. Activa BuildKit (`DOCKER_BUILDKIT=1`) o usa una version de Docker reciente.
-- **`Unknown flag: --mount` o sintaxis no reconocida**: falta la cabecera `# syntax=docker/dockerfile:1` en la primera linea del Dockerfile.
+- **`the --mount option requires BuildKit`**: estás en el builder clásico. Activa BuildKit (`DOCKER_BUILDKIT=1`) o usa una versión de Docker reciente.
+- **`Unknown flag: --mount` o sintaxis no reconocida**: falta la cabecera `# syntax=docker/dockerfile:1` en la primera línea del Dockerfile.
 - **La cache de `--mount=type=cache` "no persiste"**: es cache de build, no se incluye en la imagen; si limpias el builder (`docker buildx prune`) se va. Es normal.
 - **Salida poco clara al depurar**: usa `--progress=plain` para ver los comandos y logs completos.
 
-> Idea clave: BuildKit es el motor moderno (ya por defecto) con builds paralelos, mejor cache y `RUN --mount`; declara `# syntax=docker/dockerfile:1` para acceder a la sintaxis mas reciente.
+> Idea clave: BuildKit es el motor moderno (ya por defecto) con builds paralelos, mejor cache y `RUN --mount`; declara `# syntax=docker/dockerfile:1` para acceder a la sintaxis más reciente.

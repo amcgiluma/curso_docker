@@ -7,20 +7,20 @@ summary: "exec sh/bash, contenedores distroless, nsenter y debug de red y arranq
 
 # Depurar contenedores por dentro
 
-Tarde o temprano necesitaras "entrar" a un contenedor para entender por que no arranca o por que no llega a la red. Aqui veras como, incluso cuando la imagen no trae shell (distroless).
+Tarde o temprano necesitaras "entrar" a un contenedor para entender por qué no arranca o por qué no llega a la red. Aquí verás cómo, incluso cuando la imagen no trae shell (distroless).
 
-## Teoria
+## Teoría
 
 La herramienta diaria es `docker exec`: lanza un **proceso nuevo** dentro de un contenedor **en marcha**. No reinicia nada; se cuela en sus namespaces.
 
 Pero hay casos dificiles:
 
-- **El contenedor no arranca**: no puedes `exec` en algo que ya murio. Hay que inspeccionar logs/estado o arrancar una shell sobreescribiendo el comando.
-- **Imagenes distroless o `scratch`**: no traen `sh`, `bash`, ni utilidades. No puedes hacer `exec sh` porque no existe.
+- **El contenedor no arranca**: no puedes `exec` en algo que ya murió. Hay que inspeccionar logs/estado o arrancar una shell sobreescribiendo el comando.
+- **Imágenes distroless o `scratch`**: no traen `sh`, `bash`, ni útilidades. No puedes hacer `exec sh` porque no existe.
 
-Tecnicas segun el caso:
+Técnicas según el caso:
 
-| Situacion | Tecnica |
+| Situacion | Técnica |
 | --- | --- |
 | Contenedor vivo con shell | `docker exec -it <c> sh` |
 | Contenedor vivo sin shell (distroless) | `docker debug` o un *sidecar* que comparte namespaces |
@@ -28,7 +28,7 @@ Tecnicas segun el caso:
 | Inspeccionar la red de otro contenedor | Contenedor extra con `--network container:<c>` |
 | Acceso de bajo nivel desde el host | `nsenter` sobre el PID del contenedor |
 
-> Nota: muchas imagenes Alpine traen `sh` pero **no** `bash`. Si `docker exec -it c bash` falla, prueba `sh`.
+> Nota: muchas imágenes Alpine traen `sh` pero **no** `bash`. Si `docker exec -it c bash` falla, prueba `sh`.
 
 ## Manos a la obra
 
@@ -61,7 +61,7 @@ PID   USER   COMMAND
 ... (ves los procesos y puertos del contenedor distroless) ...
 ```
 
-Si un contenedor **no arranca**, no hagas `exec`: mira por que murio y luego abre una shell saltandote el entrypoint:
+Si un contenedor **no arranca**, no hagas `exec`: mira por qué murió y luego abre una shell saltandote el entrypoint:
 
 ```compare
 # CMD
@@ -69,7 +69,7 @@ docker logs roto
 docker run --rm -it --entrypoint sh <tu-usuario>/roto:1.0
 # OUT
 exec /app/start.sh: no such file or directory
-# (con --entrypoint sh ya estas dentro para revisar la imagen)
+# (con --entrypoint sh ya estás dentro para revisar la imagen)
 / # ls -l /app
 ```
 
@@ -85,7 +85,7 @@ sudo nsenter --target $PID --pid --net --mount sh
 
 ## Flags y variantes
 
-| Comando / flag | Para que sirve |
+| Comando / flag | Para qué sirve |
 | --- | --- |
 | `docker exec -it <c> sh` | Shell interactiva en un contenedor vivo |
 | `docker exec -u 0 <c> sh` | Entra como root aunque la app corra sin privilegios |
@@ -100,10 +100,10 @@ sudo nsenter --target $PID --pid --net --mount sh
 
 > Nota: `docker debug` forma parte de Docker Desktop / Docker Pro y funciona incluso con distroless, porque inyecta sus propias herramientas sin modificar la imagen.
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Arranca `docker run -d --name web nginx:1.27-alpine` y entra con `docker exec -it web sh`.
-2. Dentro, prueba `wget -qO- http://localhost/` para ver el HTML que sirve.
+2. Dentro, prueba `wget -qO- http://localhost/` para ver el HTML qué sirve.
 3. Lanza un netshoot adjunto a su red: `docker run --rm -it --network container:web nicolaka/netshoot curl -s http://localhost/`.
 4. Simula un contenedor roto: `docker run --name roto alpine /noexiste`; mira `docker logs roto` y abre `docker run --rm -it --entrypoint sh alpine`.
 5. (Linux) Obten el PID con `docker inspect --format '{{.State.Pid}}' web` y entra con `sudo nsenter --target <pid> --net --pid --mount sh`.
@@ -112,8 +112,8 @@ sudo nsenter --target $PID --pid --net --mount sh
 ## Errores comunes
 
 - **`exec: "bash": executable file not found`**: la imagen (Alpine, distroless) no tiene bash. Usa `sh`, o un sidecar/`docker debug` si no hay ninguna shell.
-- **`Error: No such container` al hacer exec**: el contenedor ya no esta vivo. Para los que no arrancan, depura con `logs`, `inspect` y `--entrypoint`, no con `exec`.
+- **`Error: No such container` al hacer exec**: el contenedor ya no está vivo. Para los que no arrancan, depura con `logs`, `inspect` y `--entrypoint`, no con `exec`.
 - **`permission denied` dentro del contenedor**: la app corre como usuario sin privilegios. Reentra con `docker exec -u 0` para mirar como root.
-- **`nsenter: command not found` o permiso denegado**: necesitas `util-linux` y privilegios; en Docker Desktop (Mac/Windows) el host es una VM, asi que `docker debug` o un sidecar suelen ser mejores opciones.
+- **`nsenter: command not found` o permiso denegado**: necesitas `útil-linux` y privilegios; en Docker Desktop (Mac/Windows) el host es una VM, así que `docker debug` o un sidecar suelen ser mejores opciones.
 
-> Idea clave: `docker exec -it <c> sh` es tu entrada habitual; para imagenes sin shell comparte namespaces con un sidecar (`--pid`/`--network container:`) o usa `docker debug`, y para contenedores que no arrancan depura con `logs`, `inspect` y `--entrypoint`.
+> Idea clave: `docker exec -it <c> sh` es tu entrada habitual; para imágenes sin shell comparte namespaces con un sidecar (`--pid`/`--network container:`) o usa `docker debug`, y para contenedores que no arrancan depura con `logs`, `inspect` y `--entrypoint`.

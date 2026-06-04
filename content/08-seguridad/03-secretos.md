@@ -1,28 +1,28 @@
 ---
-title: "Gestion de secretos"
+title: "Gestión de secretos"
 slug: "secretos"
 order: 3
-summary: "Build secrets, secrets de Compose y por que no usar variables de entorno."
+summary: "Build secrets, secrets de Compose y por qué no usar variables de entorno."
 ---
 
-# Gestion de secretos
+# Gestión de secretos
 
-Contrasenas, tokens y claves nunca deberian quedar grabados en la imagen ni expuestos en variables de entorno. Docker ofrece **build secrets** (durante la construccion) y **secrets de Compose** (en ejecucion) para manejarlos de forma segura.
+Contraseñas, tokens y claves nunca deberían quedar grabados en la imagen ni expuestos en variables de entorno. Docker ofrece **build secrets** (durante la construcción) y **secrets de Compose** (en ejecución) para manejarlos de forma segura.
 
-## Teoria
+## Teoría
 
-Por que **no** usar `ENV`/`ARG` para secretos:
+Por qué **no** usar `ENV`/`ARG` para secretos:
 
 - **`ENV`**: queda en la imagen y aparece en `docker inspect`, en `docker history` y en la lista de variables de cualquier proceso. Cualquiera con la imagen lo ve.
-- **`ARG`**: aunque no persiste como variable en runtime, su valor puede quedar en la cache de capas y en `docker history` segun como se use.
-- Las variables de entorno se filtran con facilidad: logs, volcados de error, `/proc/<pid>/environ`, herramientas de monitorizacion.
+- **`ARG`**: aunque no persiste como variable en runtime, su valor puede quedar en la cache de capas y en `docker history` según cómo se use.
+- Las variables de entorno se filtran con fácilidad: logs, volcados de error, `/proc/<pid>/environ`, herramientas de monitorizacion.
 
 Mecanismos correctos:
 
-- **Build secrets (BuildKit)**: `RUN --mount=type=secret,id=...` expone el secreto solo durante ese `RUN`, montado en `/run/secrets/<id>`, y **no** queda en la imagen final. Lo veras a fondo en el modulo de Build avanzado.
+- **Build secrets (BuildKit)**: `RUN --mount=type=secret,id=...` expone el secreto solo durante ese `RUN`, montado en `/run/secrets/<id>`, y **no** queda en la imagen final. Lo verás a fondo en el módulo de Build avanzado.
 - **Secrets en runtime (Compose)**: se montan como ficheros en `/run/secrets/<nombre>`; el proceso los lee del fichero, no del entorno.
 
-> Patron `_FILE`: muchas imagenes oficiales (postgres, mysql, etc.) aceptan `VAR_FILE` apuntando a un fichero de secreto, en vez de `VAR` con el valor en claro. Combina perfecto con los secrets de Compose.
+> Patron `_FILE`: muchas imágenes oficiales (postgres, mysql, etc.) aceptan `VAR_FILE` apuntando a un fichero de secreto, en vez de `VAR` con el valor en claro. Combina perfecto con los secrets de Compose.
 
 ## Manos a la obra
 
@@ -53,7 +53,7 @@ docker history --no-trunc demo-secret | grep -i "clave-super-secreta" || echo "n
 no aparece el secreto
 ```
 
-Secret en runtime con Compose (patron `_FILE`):
+Secret en runtime con Compose (patrón `_FILE`):
 
 ```yaml
 services:
@@ -80,7 +80,7 @@ P@ssw0rd-fichero
 
 ## Flags y variantes
 
-| Mecanismo | Que hace |
+| Mecanismo | Qué hace |
 | --- | --- |
 | `RUN --mount=type=secret,id=<id>` | Monta un secreto solo durante ese `RUN` (build) |
 | `docker build --secret id=<id>,src=<fichero>` | Pasa el fichero de secreto al build |
@@ -88,21 +88,21 @@ P@ssw0rd-fichero
 | `secrets:` (Compose, top-level) `file:` | Define un secreto desde un fichero |
 | `secrets:` (Compose, top-level) `environment:` | Define un secreto desde una variable |
 | `secrets: [<nombre>]` (servicio) | Lo monta en `/run/secrets/<nombre>` |
-| `VAR_FILE` (imagenes oficiales) | Lee el secreto desde fichero en vez de env |
+| `VAR_FILE` (imágenes oficiales) | Lee el secreto desde fichero en vez de env |
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Crea `api_key.txt` con un valor y el `Dockerfile` con `--mount=type=secret`.
 2. Construye con `docker build --secret id=api_key,src=api_key.txt -t demo-secret .`.
 3. Verifica que el secreto no aparece: `docker history --no-trunc demo-secret` no debe contener el valor.
-4. Crea un `compose.yaml` con `secrets` (patron `_FILE`) y `db_password.txt`.
+4. Crea un `compose.yaml` con `secrets` (patrón `_FILE`) y `db_password.txt`.
 5. Comprueba con `docker compose exec db printenv POSTGRES_PASSWORD` que NO existe la variable con el valor (solo `..._FILE`).
 
 ## Errores comunes
 
 - **`ENV API_KEY=...` en el Dockerfile**: el secreto queda visible en la imagen y en `docker history`. Usa build secrets o secrets de runtime.
 - **`--mount=type=secret` da error de sintaxis**: falta la cabecera `# syntax=docker/dockerfile:1` o no usas BuildKit. En Docker moderno BuildKit es el motor por defecto.
-- **El fichero del secreto en el repo**: nunca subas `db_password.txt`/`api_key.txt` al control de versiones. Anadelos a `.gitignore` y a `.dockerignore`.
-- **Confiar en `ARG` para secretos**: el valor puede acabar en cache o en `history`. `ARG` es para configuracion no sensible.
+- **El fichero del secreto en el repo**: nunca subas `db_password.txt`/`api_key.txt` al control de versiones. Añadelos a `.gitignore` y a `.dockerignore`.
+- **Confiar en `ARG` para secretos**: el valor puede acabar en cache o en `history`. `ARG` es para configuración no sensible.
 
-> Idea clave: nunca metas secretos en `ENV`/`ARG` ni en la imagen; usa **build secrets** (`--mount=type=secret`) durante la construccion y **secrets de Compose** con el patron `_FILE` en ejecucion.
+> Idea clave: nunca metas secretos en `ENV`/`ARG` ni en la imagen; usa **build secrets** (`--mount=type=secret`) durante la construcción y **secrets de Compose** con el patrón `_FILE` en ejecución.

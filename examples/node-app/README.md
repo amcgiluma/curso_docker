@@ -1,13 +1,13 @@
 # Node app (multi-stage + non-root + healthcheck)
 
-App minima con Express que responde `hola docker` en `/` y un endpoint `/health`.
+App mínima con Express que responde `hola docker` en `/` y un endpoint `/health`.
 
 ## Que demuestra
 
 - **Build multi-stage**: una etapa `deps` instala dependencias (cacheable) y una etapa `runtime` ligera solo copia lo necesario.
 - **Usuario non-root**: el contenedor corre como el usuario `node` (uid 1000), no como root.
-- **HEALTHCHECK**: Docker comprueba `/health` periodicamente sin depender de `curl` (usa el propio `node`).
-- **Imagen pequena**: base `node:22-alpine`.
+- **HEALTHCHECK**: Docker comprueba `/health` periódicamente sin depender de `curl` (usa el propio `node`).
+- **Imagen pequeña**: base `node:22-alpine`.
 
 ## Construir
 

@@ -2,24 +2,24 @@
 title: "Profiles, multiples ficheros y override"
 slug: "profiles-override"
 order: 4
-summary: "profiles, varios -f, override automatico, extends y separar dev de prod."
+summary: "profiles, varios -f, override automático, extends y separar dev de prod."
 ---
 
 # Profiles, multiples ficheros y override
 
-Una misma aplicacion suele necesitar configuraciones distintas para desarrollo y produccion. Compose ofrece tres mecanismos para ello: **profiles** (activar servicios opcionales), **multiples ficheros** combinados con `-f`, y `extends` para reutilizar definiciones.
+Una misma aplicación suele necesitar configuraciones distintas para desarrollo y producción. Compose ofrece tres mecanismos para ello: **profiles** (activar servicios opcionales), **multiples ficheros** combinados con `-f`, y `extends` para reútilizar definiciónes.
 
-## Teoria
+## Teoría
 
-**Profiles**: marcas un servicio con `profiles: [debug]` y solo se levanta si activas ese perfil (`--profile debug` o variable `COMPOSE_PROFILES`). Util para herramientas opcionales (un Adminer, un debugger) que no quieres en el `up` normal.
+**Profiles**: marcas un servicio con `profiles: [debug]` y solo se levanta si activas ese perfil (`--profile debug` o variable `COMPOSE_PROFILES`). Útil para herramientas opcionales (un Adminer, un debugger) que no quieres en el `up` normal.
 
-**Multiples ficheros (`-f`)**: Compose puede fusionar varios YAML. Las claves del fichero posterior **sobrescriben o se anaden** a las del anterior. Esto permite tener una base comun y capas por entorno.
+**Multiples ficheros (`-f`)**: Compose puede fusionar varios YAML. Las claves del fichero posterior **sobrescriben o se añaden** a las del anterior. Esto permite tener una base común y capas por entorno.
 
-**Override automatico**: si existen `compose.yaml` y `compose.override.yaml`, Compose carga ambos por defecto (sin `-f`). Patron tipico: base en `compose.yaml`, ajustes de desarrollo en `compose.override.yaml`.
+**Override automático**: si existen `compose.yaml` y `compose.override.yaml`, Compose carga ambos por defecto (sin `-f`). Patron tipico: base en `compose.yaml`, ajustes de desarrollo en `compose.override.yaml`.
 
-**`extends`**: un servicio puede heredar la definicion de otro (en el mismo o en otro fichero) y luego ajustar lo que cambie.
+**`extends`**: un servicio puede heredar la definición de otro (en el mismo o en otro fichero) y luego ajustar lo que cambie.
 
-> Reglas de fusion: las **listas** (como `ports` o `volumes`) se concatenan; los **mapas** (como `environment`) se combinan clave a clave; los **escalares** (como `image`) los reemplaza el ultimo fichero.
+> Reglas de fusion: las **listas** (como `ports` o `volumes`) se concatenan; los **mapas** (como `environment`) se combinan clave a clave; los **escalares** (como `image`) los reemplaza el último fichero.
 
 ## Manos a la obra
 
@@ -58,7 +58,7 @@ adminer
 web
 ```
 
-Combina base + override de produccion con `-f`:
+Combina base + override de producción con `-f`:
 
 ```yaml
 # compose.prod.yaml
@@ -82,15 +82,15 @@ docker compose -f compose.yaml -f compose.prod.yaml config | grep -E "image:|ENV
 
 ## Flags y variantes
 
-| Mecanismo / flag | Que hace |
+| Mecanismo / flag | Qué hace |
 | --- | --- |
 | `profiles: [nombre]` | Marca un servicio como opcional bajo ese perfil |
 | `--profile <nombre>` | Activa un perfil al ejecutar |
 | `COMPOSE_PROFILES=a,b` | Activa perfiles via variable de entorno |
-| `-f a.yaml -f b.yaml` | Fusiona ficheros (el ultimo gana en escalares) |
-| `compose.override.yaml` | Se carga automaticamente junto a `compose.yaml` |
+| `-f a.yaml -f b.yaml` | Fusiona ficheros (el último gana en escalares) |
+| `compose.override.yaml` | Se carga automáticamente junto a `compose.yaml` |
 | `COMPOSE_FILE=a.yaml:b.yaml` | Define la lista de ficheros via variable |
-| `extends.file` / `extends.service` | Hereda la definicion de otro servicio |
+| `extends.file` / `extends.service` | Hereda la definición de otro servicio |
 | `docker compose config` | Muestra el resultado final ya fusionado |
 
 ### Ejemplo de `extends`
@@ -115,19 +115,19 @@ services:
       - "3000:3000"
 ```
 
-## Pruebalo tu
+## Pruébalo tú
 
-1. Crea el `compose.yaml` con `web` y `adminer` (este ultimo con `profiles: [tools]`).
-2. Ejecuta `docker compose up -d` y comprueba con `docker compose ps --services` que solo esta `web`.
+1. Crea el `compose.yaml` con `web` y `adminer` (este último con `profiles: [tools]`).
+2. Ejecuta `docker compose up -d` y comprueba con `docker compose ps --services` que solo está `web`.
 3. Ahora `docker compose --profile tools up -d`: ya aparece `adminer`.
 4. Crea `compose.prod.yaml` que cambie `image` y anada `restart: always`, y ejecuta `docker compose -f compose.yaml -f compose.prod.yaml config` para ver la fusion.
-5. Renombra `compose.prod.yaml` a `compose.override.yaml` y observa que `docker compose config` (sin `-f`) ya lo aplica automaticamente.
+5. Renombra `compose.prod.yaml` a `compose.override.yaml` y observa que `docker compose config` (sin `-f`) ya lo aplica automáticamente.
 
 ## Errores comunes
 
 - **Un servicio "opcional" arranca siempre**: olvidaste el `profiles:` o lo activaste con `--profile`. Sin perfil activo, los servicios con profile no se levantan.
-- **El override no se aplica**: el orden de `-f` importa; el ultimo fichero gana. Revisa el resultado con `docker compose config`.
-- **Listas que se duplican**: al fusionar, `ports`/`volumes` se concatenan. Si quieres reemplazar puertos, pon `ports: []` en el override para vaciarlos antes (como en el ejemplo).
+- **El override no se aplica**: el orden de `-f` importa; el último fichero gana. Revisa el resultado con `docker compose config`.
+- **Listas que se duplican**: al fusionar, `ports`/`volumes` se concatenan. Si quieres reemplazar puertos, pon `ports: []` en el override para vacíarlos antes (como en el ejemplo).
 - **`extends` con `depends_on`**: `extends` no copia `depends_on`, `volumes_from` ni `links`; defínelos en el servicio final.
 
-> Idea clave: usa `profiles` para servicios opcionales, varios `-f` (o `compose.override.yaml`) para capas por entorno y `extends` para reutilizar; valida siempre la fusion con `docker compose config`.
+> Idea clave: usa `profiles` para servicios opcionales, varios `-f` (o `compose.override.yaml`) para capas por entorno y `extends` para reútilizar; valida siempre la fusion con `docker compose config`.

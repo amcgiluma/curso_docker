@@ -1,22 +1,22 @@
 ---
-title: "Logging drivers y rotacion de logs"
+title: "Logging drivers y rotación de logs"
 slug: "logging-drivers"
 order: 3
-summary: "json-file, local y otros drivers, mas rotacion para que los logs no llenen el disco."
+summary: "json-file, local y otros drivers, más rotación para que los logs no llenen el disco."
 ---
 
-# Logging drivers y rotacion de logs
+# Logging drivers y rotación de logs
 
-Por defecto Docker guarda los logs como JSON sin limite de tamano: en produccion eso llena el disco tarde o temprano. Aqui veras los **logging drivers** y como configurar la **rotacion**.
+Por defecto Docker guarda los logs como JSON sin límite de tamaño: en producción eso llena el disco tarde o temprano. Aquí verás los **logging drivers** y cómo configurar la **rotación**.
 
-## Teoria
+## Teoría
 
-Un **logging driver** decide que hace Docker con el stdout/stderr de tus contenedores. El driver por defecto es **`json-file`**.
+Un **logging driver** decide qué hace Docker con el stdout/stderr de tus contenedores. El driver por defecto es **`json-file`**.
 
-| Driver | Que hace | `docker logs` |
+| Driver | Qué hace | `docker logs` |
 | --- | --- | --- |
 | `json-file` | Guarda JSON en el host (por defecto) | si |
-| `local` | Formato binario optimizado, con rotacion por defecto | si |
+| `local` | Formato binario optimizado, con rotación por defecto | si |
 | `journald` | Envia a `systemd-journald` | si (via journald) |
 | `syslog` | Envia a un syslog (local o remoto) | no |
 | `gelf` | Envia a Graylog/Logstash (GELF) | no |
@@ -24,9 +24,9 @@ Un **logging driver** decide que hace Docker con el stdout/stderr de tus contene
 | `awslogs` | Envia a CloudWatch Logs | no |
 | `none` | Descarta los logs | no |
 
-Punto critico de produccion: con `json-file` **sin rotacion**, el fichero crece indefinidamente. La solucion son las opciones `max-size` y `max-file`.
+Punto critico de producción: con `json-file` **sin rotación**, el fichero crece indefinidamente. La solucion son las opciones `max-size` y `max-file`.
 
-> Nota: el driver **`local`** ya aplica rotacion por defecto (100 MB, 5 ficheros) y es mas eficiente en disco. Para muchos casos es mejor opcion que `json-file`.
+> Nota: el driver **`local`** ya aplica rotación por defecto (100 MB, 5 ficheros) y es más eficiente en disco. Para muchos casos es mejor opción que `json-file`.
 
 Puedes configurar el driver a tres niveles:
 
@@ -36,7 +36,7 @@ Puedes configurar el driver a tres niveles:
 
 ## Manos a la obra
 
-Arranca un contenedor con `json-file` y rotacion (max 10 MB por fichero, 3 ficheros):
+Arranca un contenedor con `json-file` y rotación (max 10 MB por fichero, 3 ficheros):
 
 ```compare
 # CMD
@@ -50,7 +50,7 @@ docker inspect --format '{{.HostConfig.LogConfig.Type}} {{json .HostConfig.LogCo
 json-file {"max-file":"3","max-size":"10m"}
 ```
 
-Configura la rotacion **global** para que aplique a todos los contenedores nuevos en `/etc/docker/daemon.json`:
+Configura la rotación **global** para que aplique a todos los contenedores nuevos en `/etc/docker/daemon.json`:
 
 ```json
 {
@@ -86,32 +86,32 @@ Logging Driver: json-file
 
 ## Flags y variantes
 
-| Opcion | Para que sirve |
+| Opción | Para qué sirve |
 | --- | --- |
 | `--log-driver <driver>` | Elige el driver del contenedor |
-| `--log-opt max-size=10m` | Tamano maximo por fichero antes de rotar |
-| `--log-opt max-file=3` | Numero de ficheros rotados a conservar |
+| `--log-opt max-size=10m` | Tamano máximo por fichero antes de rotar |
+| `--log-opt max-file=3` | Número de ficheros rotados a conservar |
 | `--log-opt compress=true` | Comprime los ficheros rotados (json-file/local) |
-| `--log-opt tag="{{.Name}}"` | Etiqueta los mensajes (util en syslog/gelf/fluentd) |
+| `--log-opt tag="{{.Name}}"` | Etiqueta los mensajes (útil en syslog/gelf/fluentd) |
 | `--log-driver none` | Desactiva los logs de ese contenedor |
 | `docker info --format '{{.LoggingDriver}}'` | Muestra el driver por defecto del daemon |
 
 > Nota: `docker logs` solo funciona con drivers que guardan localmente (`json-file`, `local`, `journald`). Con `syslog`/`gelf`/`fluentd` debes mirar los logs en el destino. Cambiar el driver de un contenedor requiere recrearlo (no es editable en caliente).
 
-## Pruebalo tu
+## Pruébalo tú
 
-1. Arranca un contenedor con rotacion: `docker run -d --name web --log-opt max-size=1m --log-opt max-file=3 nginx:1.27-alpine`.
+1. Arranca un contenedor con rotación: `docker run -d --name web --log-opt max-size=1m --log-opt max-file=3 nginx:1.27-alpine`.
 2. Verifica la config: `docker inspect --format '{{json .HostConfig.LogConfig}}' web`.
-3. Genera trafico (`docker exec web sh -c "for i in $(seq 1 100000); do echo log $i; done"`) y observa la rotacion en `/var/lib/docker/containers/<id>/`.
+3. Genera trafico (`docker exec web sh -c "for i in $(seq 1 100000); do echo log $i; done"`) y observa la rotación en `/var/lib/docker/containers/<id>/`.
 4. Consulta el driver del daemon con `docker info --format '{{.LoggingDriver}}'`.
 5. Prueba el driver `local`: `docker run -d --name web2 --log-driver local nginx:1.27-alpine` y compara.
-6. Reto: edita `/etc/docker/daemon.json` (o Docker Desktop -> Docker Engine) con `max-size`/`max-file`, reinicia Docker y comprueba que los contenedores nuevos heredan la rotacion.
+6. Reto: edita `/etc/docker/daemon.json` (o Docker Desktop -> Docker Engine) con `max-size`/`max-file`, reinicia Docker y comprueba que los contenedores nuevos heredan la rotación.
 
 ## Errores comunes
 
-- **El disco se llena de JSON de logs**: usabas `json-file` sin rotacion. Anade `max-size`/`max-file` o cambia a `local`.
+- **El disco se llena de JSON de logs**: usabas `json-file` sin rotación. Añade `max-size`/`max-file` o cambia a `local`.
 - **`docker logs` da error tras cambiar el driver**: pusiste `syslog`/`gelf`/etc. Esos no permiten `docker logs`; consulta el destino.
 - **Cambie el driver pero el contenedor sigue igual**: el driver se fija al crear el contenedor. Hay que recrearlo (los cambios en `daemon.json` solo afectan a los nuevos).
 - **`max-size` sin unidad**: usa sufijos (`k`, `m`, `g`). `max-size=10` se interpreta en bytes y rotara constantemente.
 
-> Idea clave: en produccion nunca dejes `json-file` sin rotacion: configura `max-size`/`max-file` (o usa el driver `local`, que ya rota) a nivel de daemon, contenedor o Compose, y recuerda que solo los drivers locales permiten `docker logs`.
+> Idea clave: en producción nunca dejes `json-file` sin rotación: configura `max-size`/`max-file` (o usa el driver `local`, que ya rota) a nivel de daemon, contenedor o Compose, y recuerda que solo los drivers locales permiten `docker logs`.

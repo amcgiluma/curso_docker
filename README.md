@@ -1,37 +1,37 @@
 # 🐳 Curso de Docker Interactivo
 
 Un curso **self-paced de nivel avanzado** para dominar Docker de verdad, pensado para
-quien ya completo el *Docker Getting Started*. Cada leccion te da un **comando para
-ejecutar en tu maquina** y, justo al lado, la **salida esperada**, para que compares
+quien ya completo el *Docker Getting Started*. Cada lección te da un **comando para
+ejecutar en tu máquina** y, justo al lado, la **salida esperada**, para que compares
 tu resultado al instante y aprendas haciendo.
 
-La plataforma esta construida con **React + Vite + Tailwind** (frontend) y
+La plataforma está construida con **React + Vite + Tailwind** (frontend) y
 **FastAPI** (backend), y todo corre con **Docker** — porque el propio curso es,
-ademas, un caso real de dockerizacion que estudiaras en el ultimo modulo.
+además, un caso real de dockerización que estudiarás en el último módulo.
 
 ---
 
-## Que vas a aprender
+## Qué vas a aprender
 
-13 modulos que cubren Docker de arriba a abajo:
+13 módulos que cubren Docker de arriba a abajo:
 
-| #  | Modulo | Contenido |
+| #  | Módulo | Contenido |
 | -- | ------ | --------- |
 | 01 | Fundamentos e internals | Contenedores vs VMs, daemon/containerd/runc, namespaces, cgroups, capas |
-| 02 | Imagenes y contenedores | Todos los comandos y flags: `run`, `ps`, `inspect`, `logs`, `exec`, `cp`... |
+| 02 | Imágenes y contenedores | Todos los comandos y flags: `run`, `ps`, `inspect`, `logs`, `exec`, `cp`... |
 | 03 | Dockerfiles a fondo | Todas las instrucciones, `CMD` vs `ENTRYPOINT`, cache, `.dockerignore` |
-| 04 | Multi-stage y optimizacion | Builds multi-stage, alpine/distroless/scratch, cache mounts |
+| 04 | Multi-stage y optimización | Builds multi-stage, alpine/distroless/scratch, cache mounts |
 | 05 | Almacenamiento | Volumes, bind mounts, tmpfs, persistencia y backup |
-| 06 | Redes | bridge/host/none/overlay/macvlan, DNS interno, publicacion de puertos |
+| 06 | Redes | bridge/host/none/overlay/macvlan, DNS interno, publicación de puertos |
 | 07 | Docker Compose a fondo | Servicios, healthchecks, profiles, override, secrets, deploy |
-| 08 | Seguridad | Non-root, capabilities, read-only, secretos, escaneo, limites |
+| 08 | Seguridad | Non-root, capabilities, read-only, secretos, escaneo, límites |
 | 09 | Build avanzado | BuildKit, buildx, multi-arch, secret/ssh mounts, bake |
 | 10 | Registries | login, tag, push/pull, registro privado, manifests multi-arch |
 | 11 | Observabilidad y debugging | logs, events, inspect, stats, depurar contenedores |
-| 12 | Produccion | PID 1 y senales, healthchecks, restart policies, logging, 12-factor |
+| 12 | Producción | PID 1 y señales, healthchecks, restart policies, logging, 12-factor |
 | 13 | Proyecto final | Dockerizar esta misma plataforma (dev y prod) y repaso |
 
-Ademas, `examples/` incluye casos de practica autocontenidos: `node-app`,
+Además, `examples/` incluye casos de práctica autocontenidos: `node-app`,
 `python-app`, `nginx`, `networking`, `volumes` y `multi-arch`.
 
 ---
@@ -39,11 +39,11 @@ Ademas, `examples/` incluye casos de practica autocontenidos: `node-app`,
 ## Requisitos
 
 - [Docker](https://docs.docker.com/get-docker/) 24+ (recomendado 28+) y Docker Compose v2.
-- O, para ejecucion local sin contenedores: Node.js 20+ y Python 3.11+.
+- O, para ejecución local sin contenedores: Node.js 20+ y Python 3.11+.
 
 ---
 
-## Arranque rapido (con Docker)
+## Arranque rápido (con Docker)
 
 ### Desarrollo (hot reload)
 
@@ -54,7 +54,7 @@ docker compose -f docker-compose.dev.yml up --build
 - Frontend (Vite): http://localhost:5173
 - Backend (FastAPI): http://localhost:8000/api/modules
 
-### Produccion
+### Producción
 
 ```bash
 docker compose up --build -d
@@ -103,7 +103,7 @@ Abre http://localhost:5173 (Vite proxya `/api` al backend en el puerto 8000).
 .
 ├── AGENTS.md               # Contexto para agentes de IA (leer primero)
 ├── README.md
-├── docker-compose.yml      # Stack de produccion (nginx + FastAPI, +db opcional)
+├── docker-compose.yml      # Stack de producción (nginx + FastAPI, +db opcional)
 ├── docker-compose.dev.yml  # Stack de desarrollo (hot reload)
 ├── frontend/               # React + Vite + TS + Tailwind
 │   ├── Dockerfile          # multi-stage: build -> nginx
@@ -111,66 +111,66 @@ Abre http://localhost:5173 (Vite proxya `/api` al backend en el puerto 8000).
 ├── backend/                # FastAPI (sirve el contenido)
 │   ├── Dockerfile          # multi-stage: deps -> runtime non-root
 │   └── app/
-├── content/                # El curso: 1 carpeta por modulo (module.json + lecciones .md)
+├── content/                # El curso: 1 carpeta por módulo (module.json + lecciones .md)
 │   ├── 01-fundamentos-internals/
 │   └── ...
-└── examples/               # Casos de practica autocontenidos
+└── examples/               # Casos de práctica autocontenidos
     ├── node-app/  python-app/  nginx/
     └── networking/  volumes/  multi-arch/
 ```
 
 ---
 
-## Como funcionan las lecciones
+## Cómo funcionan las lecciones
 
-Cada leccion sigue la misma estructura: teoria breve → **comando** → **salida
-esperada** → "Pruebalo tu" → flags y variantes → errores comunes → idea clave.
+Cada lección sigue la misma estructura: teoría breve → **comando** → **salida
+esperada** → "Pruébalo tú" → flags y variantes → errores comunes → idea clave.
 
 Los bloques `Comando` (azul) traen boton de copiar; los bloques `Salida esperada`
-(verde) muestran lo que deberias ver. **Ejecuta el comando en tu terminal y compara.**
+(verde) muestran lo que deberías ver. **Ejecuta el comando en tu terminal y compara.**
 Algunas salidas usan marcadores como `<hash>` o `<container-id>` para indicar valores
 que cambian en tu entorno.
 
-Tu progreso se guarda automaticamente en el navegador (`localStorage`).
+Tu progreso se guarda automáticamente en el navegador (`localStorage`).
 
 ---
 
-## Anadir o editar contenido
+## Añadir o editar contenido
 
 1. Crea una carpeta `content/NN-slug/` con un `module.json`:
 
 ```json
-{ "slug": "mi-modulo", "title": "Mi modulo", "order": 14, "summary": "..." }
+{ "slug": "mi-modulo", "title": "Mi módulo", "order": 14, "summary": "..." }
 ```
 
-2. Anade lecciones `.md` con frontmatter:
+2. Añade lecciones `.md` con frontmatter:
 
 ```markdown
 ---
-title: "Mi leccion"
+title: "Mi lección"
 slug: "mi-leccion"
 order: 1
 summary: "Una frase de resumen"
 ---
 ```
 
-`content/` se monta como volumen de solo lectura, asi que no necesitas reconstruir la
-imagen: reinicia el backend para refrescar el indice. Consulta el formato completo en
+`content/` se monta como volumen de solo lectura, así que no necesitas reconstruir la
+imagen: reinicia el backend para refrescar el índice. Consulta el formato completo en
 la skill `.agents/skills/course-lesson-authoring/`.
 
 ---
 
 ## Desplegar en Vercel (sin backend)
 
-La plataforma puede desplegarse **100% estatica**: como la verificacion es manual y
-el contenido no cambia en tiempo de ejecucion, en produccion no hace falta backend.
+La plataforma puede desplegarse **100% estática**: como la verificación es manual y
+el contenido no cambia en tiempo de ejecución, en producción no hace falta backend.
 Un script de build genera `frontend/public/content.json` a partir de `content/` y el
-frontend lo consume directamente (con *fallback* automatico a la API de FastAPI cuando
+frontend lo consume directamente (con *fallback* automático a la API de FastAPI cuando
 ese JSON no existe, p. ej. en local o en Docker).
 
 Pasos:
 
-1. Importa el repo en [Vercel](https://vercel.com/new). La configuracion ya esta en
+1. Importa el repo en [Vercel](https://vercel.com/new). La configuración ya está en
    [`vercel.json`](vercel.json), no necesitas tocar ajustes:
    - Install: `npm --prefix frontend ci`
    - Build: `node scripts/build-content.mjs && npm --prefix frontend run build`
@@ -178,16 +178,16 @@ Pasos:
    - SPA fallback (rewrite a `/index.html`) ya configurado.
 2. Deploy. Listo.
 
-Para previsualizar el modo estatico en local:
+Para previsualizar el modo estático en local:
 
 ```bash
 node scripts/build-content.mjs        # genera frontend/public/content.json
 cd frontend && npm run build && npm run preview
 ```
 
-> Nota: el `content.json` generado esta en `.gitignore` y en el `.dockerignore` del
-> frontend, asi que **Docker sigue usando la API de FastAPI** y solo Vercel usa el
-> modo estatico.
+> Nota: el `content.json` generado está en `.gitignore` y en el `.dockerignore` del
+> frontend, así que **Docker sigue usando la API de FastAPI** y solo Vercel usa el
+> modo estático.
 
 ---
 
@@ -202,4 +202,4 @@ cd frontend && npm run build && npm run preview
 
 ## Licencia
 
-MIT. Uselo y adaptelo libremente para aprender y ensenar Docker.
+MIT. Úselo y adáptelo libremente para aprender y enseñar Docker.

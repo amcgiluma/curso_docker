@@ -7,25 +7,25 @@ summary: "Aprovechar la cache de build ordenando bien las instrucciones y limpia
 
 # Cache de capas, orden de instrucciones y .dockerignore
 
-La diferencia entre un build de 2 segundos y uno de 5 minutos suele estar en el **orden** de las instrucciones y en un buen **`.dockerignore`**. Aqui aprendes a que la cache trabaje a tu favor.
+La diferencia entre un build de 2 segundos y uno de 5 minutos suele estar en el **orden** de las instrucciones y en un buen **`.dockerignore`**. Aquí aprendes a que la cache trabaje a tu favor.
 
-## Teoria
+## Teoría
 
-### Como funciona la cache
+### Cómo funciona la cache
 
-BuildKit cachea cada capa. Para reutilizar una capa, comprueba si la instruccion **y sus entradas** son identicas a una construccion previa:
+BuildKit cachea cada capa. Para reútilizar una capa, comprueba si la instruccion **y sus entradas** son identicas a una construcción previa:
 
 - En `RUN`, la "entrada" es el texto del comando.
 - En `COPY`/`ADD`, la entrada es el **contenido** de los ficheros copiados (su checksum).
 
-Regla de oro: **en cuanto una instruccion invalida la cache, todas las siguientes se reconstruyen**. Por eso conviene poner lo que cambia poco arriba y lo que cambia mucho abajo.
+Regla de oro: **en cuánto una instruccion invalida la cache, todas las siguientes se reconstruyen**. Por eso conviene poner lo que cambia poco arriba y lo que cambia mucho abajo.
 
-### El patron clave: dependencias antes que codigo
+### El patrón clave: dependencias antes que código
 
-Copiar primero el manifiesto de dependencias e instalarlas, y solo despues copiar el codigo, hace que un cambio en el codigo **no** reinstale dependencias:
+Copiar primero el manifiesto de dependencias e instalarlas, y solo después copiar el código, hace que un cambio en el código **no** reinstale dependencias:
 
 ```dockerfile
-# MAL: cualquier cambio de codigo reinstala dependencias
+# MAL: cualquier cambio de código reinstala dependencias
 COPY . .
 RUN npm install
 
@@ -37,18 +37,18 @@ COPY . .
 
 ### `.dockerignore`
 
-Excluye del **contexto** ficheros que no deben enviarse al daemon ni acabar en la imagen (`node_modules`, `.git`, logs, secretos). Ademas de acelerar, evita invalidar la cache de `COPY . .` por cambios irrelevantes.
+Excluye del **contexto** ficheros que no deben envíarse al daemon ni acabar en la imagen (`node_modules`, `.git`, logs, secretos). Además de acelerar, evita invalidar la cache de `COPY . .` por cambios irrelevantes.
 
-> Doble beneficio: un `.dockerignore` cuidado reduce el contexto (build mas rapido) y estabiliza la cache (menos invalidaciones por ficheros que no importan).
+> Doble beneficio: un `.dockerignore` cuidado reduce el contexto (build más rápido) y estábiliza la cache (menos invalidaciones por ficheros que no importan).
 
 ## Manos a la obra
 
-Compara el orden bueno y el malo. Primer build llena la cache; al cambiar solo el codigo, el bueno reutiliza la capa de dependencias:
+Compara el orden bueno y el malo. Primer build llena la cache; al cambiar solo el código, el bueno reútiliza la capa de dependencias:
 
 ```compare
 # CMD
 docker build -t app:cache .
-# (editas un fichero de codigo, no package.json)
+# (editas un fichero de código, no package.json)
 docker build -t app:cache .
 # OUT
  => [2/4] COPY package*.json ./                         CACHED
@@ -57,9 +57,9 @@ docker build -t app:cache .
  => exporting to image                                  0.3s
 ```
 
-Las lineas `CACHED` confirman que no se reinstalaron dependencias. Si hubieras hecho `COPY . .` antes del install, verias el `RUN npm install` ejecutarse de nuevo.
+Las líneas `CACHED` confirman que no se reinstalaron dependencias. Si hubieras hecho `COPY . .` antes del install, verias el `RUN npm install` ejecutarse de nuevo.
 
-Crea un `.dockerignore` y observa como cae el tamano del contexto:
+Crea un `.dockerignore` y observa cómo cae el tamaño del contexto:
 
 ```dockerfile
 node_modules
@@ -93,7 +93,7 @@ docker build --no-cache -t app:fresh .
 
 ## Flags y variantes
 
-| Elemento | Opcion | Para que sirve |
+| Elemento | Opción | Para qué sirve |
 | --- | --- | --- |
 | `docker build` | `--no-cache` | Ignora toda la cache |
 | `docker build` | `--pull` | Refresca la imagen base |
@@ -101,23 +101,23 @@ docker build --no-cache -t app:fresh .
 | `.dockerignore` | `node_modules` | Excluye dependencias locales |
 | `.dockerignore` | `**/*.log` | Patrones glob recursivos |
 | `.dockerignore` | `!keep.txt` | Excepcion: vuelve a incluir un fichero |
-| Dockerfile | `COPY package*.json ./` antes que el codigo | Maximiza el cache de dependencias |
+| Dockerfile | `COPY package*.json ./` antes que el código | Maximiza el cache de dependencias |
 | Dockerfile | `RUN --mount=type=cache,...` | Cache persistente entre builds (BuildKit) |
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Crea un proyecto con `package.json` y un `Dockerfile` con el **orden bueno**.
 2. Construye dos veces sin cambiar nada y confirma que el segundo build sale casi todo `CACHED`.
-3. Edita solo un fichero de codigo y reconstruye: el `RUN npm install` debe seguir `CACHED`.
-4. Ahora invierte el orden (`COPY . .` antes del install) y repite: veras como se reinstala todo.
-5. Anade un `.dockerignore` con `node_modules` y compara "transferring context" antes y despues.
+3. Edita solo un fichero de código y reconstruye: el `RUN npm install` debe seguir `CACHED`.
+4. Ahora invierte el orden (`COPY . .` antes del install) y repite: verás cómo se reinstala todo.
+5. Añade un `.dockerignore` con `node_modules` y compara "transferring context" antes y después.
 
 ## Errores comunes
 
-- **`COPY . .` demasiado pronto**: invalida la cache de las dependencias en cada cambio de codigo. Copia primero los manifiestos.
-- **Sin `.dockerignore`**: envias `node_modules`/`.git` al daemon; build lento y cache fragil. Anádelo siempre.
+- **`COPY . .` demasiado pronto**: invalida la cache de las dependencias en cada cambio de código. Copia primero los manifiestos.
+- **Sin `.dockerignore`**: envías `node_modules`/`.git` al daemon; build lento y cache fragil. Añádelo siempre.
 - **Esperar cache tras cambiar un `RUN`**: cambiar una sola letra del comando invalida esa capa y las siguientes.
-- **`--no-cache` por costumbre**: a veces se abusa de el "por si acaso"; ralentiza todo. Usalo solo cuando de verdad quieras un build limpio.
-- **Secretos en el contexto**: si no ignoras `.env`, puede acabar en la imagen via `COPY . .`. Anádelo a `.dockerignore`.
+- **`--no-cache` por costumbre**: a veces se abusa de el "por si acaso"; ralentiza todo. Úsalo solo cuando de verdad quieras un build limpio.
+- **Secretos en el contexto**: si no ignoras `.env`, puede acabar en la imagen via `COPY . .`. Añádelo a `.dockerignore`.
 
-> Idea clave: la cache se invalida en cascada desde la primera instruccion que cambia. Pon lo estable arriba (copiar manifiestos + instalar dependencias) y el codigo volatil abajo, y usa `.dockerignore` para acelerar el build y estabilizar la cache.
+> Idea clave: la cache se invalida en cascada desde la primera instruccion que cambia. Pon lo estable arriba (copiar manifiestos + instalar dependencias) y el código volatil abajo, y usa `.dockerignore` para acelerar el build y estábilizar la cache.

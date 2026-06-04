@@ -1,10 +1,10 @@
 # Build multi-arquitectura con buildx
 
-Imagen sencilla que imprime la **arquitectura destino** usando los ARG automaticos de BuildKit (`TARGETPLATFORM`, `TARGETARCH`, `TARGETOS`).
+Imagen sencilla que imprime la **arquitectura destino** usando los ARG automáticos de BuildKit (`TARGETPLATFORM`, `TARGETARCH`, `TARGETOS`).
 
 ## Que demuestra
 
-- Uso de los ARG automaticos que `buildx` inyecta segun la plataforma.
+- Uso de los ARG automáticos que `buildx` inyecta según la plataforma.
 - Construir una sola imagen para varias arquitecturas (`linux/amd64`, `linux/arm64`).
 - Inspeccionar el manifest multi-arquitectura resultante.
 
@@ -34,7 +34,7 @@ uname -m: aarch64
 ## 2b) Build multi-arquitectura real
 
 Para varias plataformas a la vez hay que **publicar** (`--push`) a un registry,
-porque el store local de imagenes no guarda manifests multi-arch:
+porque el store local de imágenes no guarda manifests multi-arch:
 
 ```bash
 docker buildx build \

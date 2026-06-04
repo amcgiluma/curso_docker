@@ -7,26 +7,26 @@ summary: "Las instrucciones que usaras en casi todo Dockerfile, con COPY vs ADD 
 
 # Instrucciones esenciales
 
-Con un punado de instrucciones construyes el 90% de las imagenes. Aqui las clave, con los dos pares que mas dudas generan: **COPY vs ADD** y **ENV vs ARG**.
+Con un punado de instrucciones construyes el 90% de las imágenes. Aquí las clave, con los dos pares que más dudas generan: **COPY vs ADD** y **ENV vs ARG**.
 
-## Teoria
+## Teoría
 
-| Instruccion | Que hace |
+| Instruccion | Qué hace |
 | --- | --- |
 | `FROM` | Imagen base de partida. Siempre la primera (salvo `ARG` previos) |
 | `RUN` | Ejecuta un comando en build y guarda el resultado en una capa |
 | `COPY` | Copia ficheros del contexto a la imagen |
-| `ADD` | Como COPY, pero ademas descomprime tars locales y acepta URLs |
+| `ADD` | Como COPY, pero además descomprime tars locales y acepta URLs |
 | `WORKDIR` | Fija el directorio de trabajo (lo crea si no existe) |
 | `ENV` | Variable de entorno que persiste en la imagen y en runtime |
 | `ARG` | Variable solo disponible **durante el build** |
 
 Pares que confunden:
 
-- **COPY vs ADD**: usa **COPY** casi siempre (es predecible). `ADD` tiene "magia": descomprime automaticamente un `.tar` local y puede descargar de una URL. Esa magia es justo lo que no quieres por sorpresa. Para descargar usa `RUN curl`/`wget` (mas control).
-- **ENV vs ARG**: `ARG` vive solo en build (ideal para versiones, no queda en la imagen). `ENV` queda en la imagen y estara disponible cuando ejecutes el contenedor. Un `ARG` puede dar valor por defecto a un `ENV`.
+- **COPY vs ADD**: usa **COPY** casi siempre (es predecible). `ADD` tiene "magia": descomprime automáticamente un `.tar` local y puede descargar de una URL. Esa magia es justo lo que no quieres por sorpresa. Para descargar usa `RUN curl`/`wget` (más control).
+- **ENV vs ARG**: `ARG` vive solo en build (ideal para versiones, no queda en la imagen). `ENV` queda en la imagen y estará disponible cuando ejecutes el contenedor. Un `ARG` puede dar valor por defecto a un `ENV`.
 
-> Buenas practicas: combina varios comandos en un solo `RUN` con `&&` para no crear capas de mas, y limpia caches en la **misma** capa (`apt-get clean`, `rm -rf /var/lib/apt/lists/*`).
+> Buenas prácticas: combina varios comandos en un solo `RUN` con `&&` para no crear capas de más, y limpia caches en la **misma** capa (`apt-get clean`, `rm -rf /var/lib/apt/lists/*`).
 
 ## Manos a la obra
 
@@ -79,7 +79,7 @@ styles.css
 
 ## Flags y variantes
 
-| Instruccion | Forma / flag util | Nota |
+| Instruccion | Forma / flag útil | Nota |
 | --- | --- | --- |
 | `FROM` | `FROM img AS etapa` | Nombra etapas para multi-stage |
 | `RUN` | forma exec `RUN ["bin","arg"]` | Evita la shell intermedia |
@@ -88,16 +88,16 @@ styles.css
 | `COPY` | `--from=etapa` | Copia desde otra etapa o imagen |
 | `ADD` | `--chown`, URLs, tars | Descomprime tars y baja URLs (usa con criterio) |
 | `WORKDIR` | rutas relativas se acumulan | Mejor rutas absolutas |
-| `ENV` | `ENV A=1 B=2` | Varias en una linea |
+| `ENV` | `ENV A=1 B=2` | Varias en una línea |
 | `ARG` | `ARG X=valor_por_defecto` | Solo en build; se pasa con `--build-arg` |
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Crea el Dockerfile del ejemplo y una carpeta `app/` con un `index.html`.
-2. Construye con `--build-arg APP_VERSION=2.3.1` y ejecuta para ver la version impresa.
-3. Comprueba con `docker run --rm app:2.3.1 env` que `APP_VERSION` esta como `ENV`.
+2. Construye con `--build-arg APP_VERSION=2.3.1` y ejecuta para ver la versión impresa.
+3. Comprueba con `docker run --rm app:2.3.1 env` que `APP_VERSION` está como `ENV`.
 4. Cambia un `COPY` por `ADD` con un `.tar.gz` local y observa que ADD lo descomprime solo.
-5. Junta dos `RUN apt-get` separados en uno solo con `&&` y compara el numero de capas con `docker history`.
+5. Junta dos `RUN apt-get` separados en uno solo con `&&` y compara el número de capas con `docker history`.
 
 ## Errores comunes
 
@@ -105,6 +105,6 @@ styles.css
 - **Capas hinchadas por `apt-get`**: si no haces `rm -rf /var/lib/apt/lists/*` en el mismo `RUN`, el cache de apt queda en la capa. Limpia en la misma instruccion.
 - **`ADD` con sorpresas**: descomprimio un tar que querias copiar entero. Usa `COPY` si no quieres esa magia.
 - **`WORKDIR` con rutas relativas encadenadas**: `WORKDIR a` y luego `WORKDIR b` acaba en `/a/b`. Usa rutas absolutas para evitar lios.
-- **Orden de `COPY . .` demasiado pronto**: invalida la cache en cada cambio de codigo (lo veremos en la leccion de cache).
+- **Orden de `COPY . .` demasiado pronto**: invalida la cache en cada cambio de código (lo veremos en la lección de cache).
 
 > Idea clave: `FROM`+`RUN`+`COPY`+`WORKDIR`+`ENV`/`ARG` cubren casi todo. Usa `COPY` por defecto (deja `ADD` para sus casos especiales), recuerda que `ARG` solo vive en build y `ENV` persiste, y agrupa/limpia en el mismo `RUN`.

@@ -39,7 +39,7 @@ docker network ls
 docker network inspect red-curso
 ```
 
-## Demostrar el aislamiento (opcional)
+## Demostrar el aíslamiento (opcional)
 
 El nombre `servidor` NO se resuelve fuera de la red `red-curso`. Por eso la red personalizada es necesaria (la red `bridge` por defecto no da DNS por nombre de contenedor).
 

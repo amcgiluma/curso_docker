@@ -1,15 +1,15 @@
 ---
-title: "Cache mounts de BuildKit y buenas practicas de build"
+title: "Cache mounts de BuildKit y buenas prácticas de build"
 slug: "cache-mounts"
 order: 4
-summary: "RUN --mount=type=cache para acelerar instalaciones y otras buenas practicas de build."
+summary: "RUN --mount=type=cache para acelerar instalaciones y otras buenas prácticas de build."
 ---
 
-# Cache mounts de BuildKit y buenas practicas de build
+# Cache mounts de BuildKit y buenas prácticas de build
 
-La cache de capas reutiliza una capa **entera o nada**. Los **cache mounts** de BuildKit van un paso mas alla: cachean el directorio de un gestor de paquetes (npm, pip, apt, go...) **entre builds**, aunque la capa se reconstruya. Resultado: instalaciones mucho mas rapidas.
+La cache de capas reútiliza una capa **entera o nada**. Los **cache mounts** de BuildKit van un paso más alla: cachean el directorio de un gestor de paquetes (npm, pip, apt, go...) **entre builds**, aunque la capa se reconstruya. Resultado: instalaciones mucho más rápidas.
 
-## Teoria
+## Teoría
 
 `RUN --mount=type=cache,target=<dir>` monta un directorio cacheado y persistente **solo durante ese `RUN`**. No queda en la imagen final, pero se conserva para el siguiente build. Es ideal para las carpetas de cache de los gestores de paquetes:
 
@@ -21,15 +21,15 @@ La cache de capas reutiliza una capa **entera o nada**. Los **cache mounts** de 
 | Go modules | `/go/pkg/mod` y `/root/.cache/go-build` |
 | Maven | `/root/.m2` |
 
-Otros tipos de mount utiles:
+Otros tipos de mount útiles:
 
 - **`type=bind`**: monta ficheros del contexto solo durante el `RUN` (sin copiarlos a una capa).
 - **`type=secret`**: expone un secreto (token, clave) en build sin que quede en ninguna capa.
-- **`type=ssh`**: reenvia tu agente SSH para clonar repos privados.
+- **`type=ssh`**: reenvía tu agente SSH para clonar repos privados.
 
 Requisitos: BuildKit activo (por defecto en Docker moderno; si no, `DOCKER_BUILDKIT=1`).
 
-> Diferencia con la cache de capas: si cambias `package.json`, la capa `RUN npm install` se invalida y se reconstruye, pero con un cache mount **no se redescargan** los paquetes ya bajados antes: se reutilizan del cache. Ahorras red y tiempo.
+> Diferencia con la cache de capas: si cambias `package.json`, la capa `RUN npm install` se invalida y se reconstruye, pero con un cache mount **no se redescargan** los paquetes ya bajados antes: se reútilizan del cache. Ahorras red y tiempo.
 
 ## Manos a la obra
 
@@ -46,7 +46,7 @@ COPY . .
 CMD ["node", "server.js"]
 ```
 
-Primer build (cache vacio) frente al segundo tras cambiar una dependencia:
+Primer build (cache vacío) frente al segundo tras cambiar una dependencia:
 
 ```compare
 # CMD
@@ -85,7 +85,7 @@ docker history web:secret --no-trunc | grep -i token
 
 ## Flags y variantes
 
-| Mount / flag | Forma | Para que sirve |
+| Mount / flag | Forma | Para qué sirve |
 | --- | --- | --- |
 | Cache mount | `RUN --mount=type=cache,target=/root/.npm ...` | Cache persistente entre builds |
 | Cache con id/sharing | `--mount=type=cache,target=...,id=npm,sharing=locked` | Comparte/serializa el cache entre builds |
@@ -95,17 +95,17 @@ docker history web:secret --no-trunc | grep -i token
 | Cabecera | `# syntax=docker/dockerfile:1` | Habilita la sintaxis moderna de BuildKit |
 | Forzar BuildKit | `DOCKER_BUILDKIT=1 docker build ...` | Si tu entorno no lo trae por defecto |
 
-## Pruebalo tu
+## Pruébalo tú
 
-1. Anade `# syntax=docker/dockerfile:1` y un cache mount de npm/pip a tu Dockerfile.
+1. Añade `# syntax=docker/dockerfile:1` y un cache mount de npm/pip a tu Dockerfile.
 2. Construye dos veces cambiando una dependencia y compara el tiempo del paso de instalacion.
-3. Comprueba que el cache mount **no** aparece en la imagen final con `docker history` (no veras esa carpeta).
-4. Prueba un secret: `docker build --secret id=tok,src=token.txt .` y verifica con `docker history --no-trunc` que el token no esta.
+3. Comprueba que el cache mount **no** aparece en la imagen final con `docker history` (no verás esa carpeta).
+4. Prueba un secret: `docker build --secret id=tok,src=token.txt .` y verifica con `docker history --no-trunc` que el token no está.
 5. Mide el ahorro de red desconectando momentaneamente y reconstruyendo: los paquetes ya cacheados no se redescargan.
 
 ## Errores comunes
 
-- **`the --mount option requires BuildKit`**: falta la cabecera `# syntax=docker/dockerfile:1` o BuildKit no esta activo. Activa `DOCKER_BUILDKIT=1`.
+- **`the --mount option requires BuildKit`**: falta la cabecera `# syntax=docker/dockerfile:1` o BuildKit no está activo. Activa `DOCKER_BUILDKIT=1`.
 - **Cachear el directorio equivocado**: si apuntas a un `target` que el gestor no usa, no aceleras nada. Revisa la tabla de directorios.
 - **Esperar que el cache mount este en la imagen**: no queda en ninguna capa (por diseno); solo acelera el build.
 - **Meter secretos con `--build-arg`**: los `ARG` quedan visibles en `history`. Usa `--mount=type=secret` para datos sensibles.

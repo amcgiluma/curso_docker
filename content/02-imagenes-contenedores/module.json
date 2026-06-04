@@ -1,6 +1,6 @@
 {
-  "slug": "imagenes-contenedores",
-  "title": "Imagenes y contenedores",
+  "slug": "imágenes-contenedores",
+  "title": "Imágenes y contenedores",
   "order": 2,
-  "summary": "Todos los comandos y flags para manejar imagenes y contenedores."
+  "summary": "Todos los comandos y flags para manejar imágenes y contenedores."
 }

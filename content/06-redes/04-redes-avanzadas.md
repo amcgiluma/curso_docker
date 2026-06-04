@@ -7,21 +7,21 @@ summary: "Drivers overlay y macvlan, y flags de network create como --subnet o -
 
 # Redes avanzadas
 
-Mas alla de la bridge, Docker ofrece drivers para escenarios concretos: **overlay** para conectar contenedores en varios hosts y **macvlan** para darles una IP propia en tu red fisica. Tambien puedes controlar el direccionamiento con flags de `network create`.
+Más alla de la bridge, Docker ofrece drivers para escenarios concretos: **overlay** para conectar contenedores en varios hosts y **macvlan** para darles una IP propia en tu red física. También puedes controlar el direccionamiento con flags de `network create`.
 
-## Teoria
+## Teoría
 
-| Driver | Cuando usarlo |
+| Driver | Cuándo usarlo |
 | --- | --- |
-| `overlay` | Comunicar contenedores en **varios hosts** (Docker Swarm). Crea una red virtual que cruza la red fisica entre nodos |
-| `macvlan` | Dar a cada contenedor una **MAC e IP propias** en tu LAN, como si fuera una maquina mas. Util para servicios que deben aparecer en la red fisica |
-| `ipvlan` | Similar a macvlan pero comparte la MAC del host; util cuando el switch limita MACs |
+| `overlay` | Comúnicar contenedores en **varios hosts** (Docker Swarm). Crea una red virtual que cruza la red física entre nodos |
+| `macvlan` | Dar a cada contenedor una **MAC e IP propias** en tu LAN, como si fuera una máquina más. Útil para servicios que deben aparecer en la red física |
+| `ipvlan` | Similar a macvlan pero comparte la MAC del host; útil cuando el switch limita MACs |
 
-**overlay**: requiere Swarm (`docker swarm init`). Usa una red de control (VXLAN) para encapsular el trafico entre nodos. Los servicios de Swarm la usan para descubrirse por nombre a traves de hosts.
+**overlay**: requiere Swarm (`docker swarm init`). Usa una red de control (VXLAN) para encapsular el trafico entre nodos. Los servicios de Swarm la usan para descubrirse por nombre a través de hosts.
 
-**macvlan**: el contenedor obtiene una IP del mismo rango que tu red fisica y es visible directamente en la LAN. Necesitas indicar la subred, el gateway y la interfaz fisica padre (`parent`).
+**macvlan**: el contenedor obtiene una IP del mismo rango que tu red física y es visible directamente en la LAN. Necesitas indicar la subred, el gateway y la interfaz física padre (`parent`).
 
-Ademas, en cualquier red bridge/overlay puedes fijar el direccionamiento con `--subnet`, `--gateway` y `--ip-range`, o aislarla del exterior con `--internal`.
+Ademas, en cualquier red bridge/overlay puedes fijar el direccionamiento con `--subnet`, `--gateway` y `--ip-range`, o aíslarla del exterior con `--internal`.
 
 > Una red `--internal` no tiene acceso de salida (sin ruta a Internet ni al host por NAT). Es ideal para la capa de base de datos: la app habla con la BBDD, pero la BBDD no sale a Internet.
 
@@ -72,7 +72,7 @@ docker network create --driver overlay --attachable mi-overlay
 
 ## Flags y variantes
 
-| Flag de `docker network create` | Que hace |
+| Flag de `docker network create` | Qué hace |
 | --- | --- |
 | `--driver bridge\|overlay\|macvlan` | Elige el tipo de red |
 | `--subnet <CIDR>` | Define la subred (p. ej. `172.28.0.0/16`) |
@@ -80,7 +80,7 @@ docker network create --driver overlay --attachable mi-overlay
 | `--ip-range <CIDR>` | Restringe el rango de IPs asignables |
 | `--internal` | Red sin acceso de salida (aislada del exterior) |
 | `--attachable` | Permite conectar contenedores standalone a una red overlay |
-| `-o parent=<iface>` | (macvlan) interfaz fisica padre, p. ej. `eth0` |
+| `-o parent=<iface>` | (macvlan) interfaz física padre, p. ej. `eth0` |
 | `--aux-address` | Reserva IPs para que Docker no las asigne |
 | `docker run --ip <ip>` | Asigna IP fija (requiere red con `--subnet`) |
 
@@ -94,7 +94,7 @@ docker network create -d macvlan \
   lan-net
 ```
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Crea una red con subred fija: `docker network create --subnet 172.30.0.0/16 lab-net`.
 2. Lanza un contenedor con IP fija: `docker run -d --name ip-fija --network lab-net --ip 172.30.0.50 nginx:alpine`.
@@ -106,7 +106,7 @@ docker network create -d macvlan \
 
 - **`This node is not a swarm manager`** al crear overlay: `overlay` necesita Swarm. Ejecuta `docker swarm init` antes.
 - **`Pool overlaps with other one on this address space`**: la `--subnet` elegida choca con otra red existente. Usa un rango distinto.
-- **macvlan no funciona en Docker Desktop**: macvlan depende de acceso directo a la interfaz fisica del host Linux; no es compatible con Docker Desktop (macOS/Windows) de forma estandar.
+- **macvlan no funciona en Docker Desktop**: macvlan depende de acceso directo a la interfaz física del host Linux; no es compatible con Docker Desktop (macOS/Windows) de forma estándar.
 - **`--ip` ignorado o error**: solo puedes fijar IP en redes creadas con `--subnet`; en la bridge por defecto no se permite.
 
-> Idea clave: usa `overlay` para multi-host con Swarm y `macvlan` para dar IP de LAN a contenedores; controla el direccionamiento con `--subnet`/`--gateway`/`--ip-range` y aisla la salida con `--internal`.
+> Idea clave: usa `overlay` para multi-host con Swarm y `macvlan` para dar IP de LAN a contenedores; controla el direccionamiento con `--subnet`/`--gateway`/`--ip-range` y aísla la salida con `--internal`.

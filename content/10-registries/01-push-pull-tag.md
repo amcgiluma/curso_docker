@@ -2,16 +2,16 @@
 title: "Publicar en Docker Hub: tag, push y pull"
 slug: "push-pull-tag"
 order: 1
-summary: "docker login, tag, push y pull para distribuir tus imagenes en Docker Hub."
+summary: "docker login, tag, push y pull para distribuir tus imágenes en Docker Hub."
 ---
 
 # Publicar en Docker Hub: tag, push y pull
 
-Una imagen solo te sirve a ti hasta que la **publicas** en un registro. En esta leccion subes una imagen propia a Docker Hub y la vuelves a descargar, entendiendo como se forma el nombre completo de cada imagen.
+Una imagen solo te sirve a ti hasta que la **publicas** en un registro. En esta lección subes una imagen propia a Docker Hub y la vuelves a descargar, entendiendo cómo se forma el nombre completo de cada imagen.
 
-## Teoria
+## Teoría
 
-Un **registro** (registry) es un servidor que almacena y distribuye imagenes. Docker Hub es el registro por defecto, pero hay muchos otros (GHCR, GitLab, ECR, registros privados...).
+Un **registro** (registry) es un servidor que almacena y distribuye imágenes. Docker Hub es el registro por defecto, pero hay muchos otros (GHCR, GitLab, ECR, registros privados...).
 
 El nombre completo de una imagen tiene esta forma:
 
@@ -21,7 +21,7 @@ El nombre completo de una imagen tiene esta forma:
 
 Si omites partes, Docker rellena los huecos:
 
-| Lo que escribes | Como lo interpreta Docker |
+| Lo que escribes | Cómo lo interpreta Docker |
 | --- | --- |
 | `nginx` | `docker.io/library/nginx:latest` |
 | `nginx:1.27` | `docker.io/library/nginx:1.27` |
@@ -30,7 +30,7 @@ Si omites partes, Docker rellena los huecos:
 
 Puntos importantes:
 
-- El `tag` por defecto es `latest`, pero **`latest` no significa "la mas reciente"**: es solo el tag que se usa cuando no especificas ninguno. Versiona siempre con tags explicitos (`1.2.0`, `1.2`, `sha-<commit>`).
+- El `tag` por defecto es `latest`, pero **`latest` no significa "la más reciente"**: es solo el tag que se usa cuando no especificas ninguno. Versiona siempre con tags explícitos (`1.2.0`, `1.2`, `sha-<commit>`).
 - Para subir a `docker.io/<usuario>/...` necesitas que el repositorio empiece por tu **usuario** de Docker Hub.
 - `push` y `pull` suben/bajan solo las **capas** que faltan, no la imagen entera cada vez.
 
@@ -88,11 +88,11 @@ docker.io/<tu-usuario>/hola-api:1.0
 
 ## Flags y variantes
 
-| Comando / flag | Para que sirve |
+| Comando / flag | Para qué sirve |
 | --- | --- |
 | `docker login` | Autentica contra Docker Hub (registro por defecto) |
 | `docker login ghcr.io` | Autentica contra otro registro |
-| `docker login -u <usuario> --password-stdin` | Pasa la contrasena por stdin (mejor para scripts/CI) |
+| `docker login -u <usuario> --password-stdin` | Pasa la contraseña por stdin (mejor para scripts/CI) |
 | `docker tag <origen> <destino>` | Crea un nombre/tag nuevo apuntando a la misma imagen |
 | `docker push <imagen>:<tag>` | Sube la imagen al registro |
 | `docker push --all-tags <repo>` | Sube todos los tags del repositorio |
@@ -100,22 +100,22 @@ docker.io/<tu-usuario>/hola-api:1.0
 | `docker pull <imagen>@sha256:<digest>` | Descarga por digest exacto (inmutable) |
 | `docker logout [registro]` | Cierra sesion y borra las credenciales guardadas |
 
-> Nota: las credenciales se guardan en `~/.docker/config.json`. En produccion conviene usar un *credential helper* en vez de dejar la contrasena en texto plano.
+> Nota: las credenciales se guardan en `~/.docker/config.json`. En producción conviene usar un *credential helper* en vez de dejar la contraseña en texto plano.
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Crea una cuenta en [hub.docker.com](https://hub.docker.com) si no la tienes y ejecuta `docker login`.
 2. Construye cualquier imagen local, por ejemplo `docker build -t demo:1.0 .` (o reusa una existente).
 3. Etiquetala con tu usuario: `docker tag demo:1.0 <tu-usuario>/demo:1.0`.
 4. Subela con `docker push <tu-usuario>/demo:1.0` y mira el repositorio en la web de Docker Hub.
 5. Borra la imagen local (`docker rmi <tu-usuario>/demo:1.0`) y recuperala con `docker pull`.
-6. Reto: anade tambien el tag `latest` (`docker tag <tu-usuario>/demo:1.0 <tu-usuario>/demo:latest`) y sube ambos con `docker push --all-tags <tu-usuario>/demo`.
+6. Reto: añade también el tag `latest` (`docker tag <tu-usuario>/demo:1.0 <tu-usuario>/demo:latest`) y sube ambos con `docker push --all-tags <tu-usuario>/demo`.
 
 ## Errores comunes
 
 - **`denied: requested access to the resource is denied`**: el repositorio no empieza por tu usuario o no has hecho `docker login`. El nombre debe ser `<tu-usuario>/imagen`.
-- **`unauthorized: incorrect username or password`**: credenciales mal o token caducado. Vuelve a hacer `docker login`. En Docker Hub conviene usar un *Access Token* en vez de la contrasena.
-- **Subir todo como `latest`**: dificulta los rollbacks. Usa tags de version y trata `latest` como un alias movil, nunca como tu unica referencia.
+- **`unauthorized: incorrect username or password`**: credenciales mal o token caducado. Vuelve a hacer `docker login`. En Docker Hub conviene usar un *Access Token* en vez de la contraseña.
+- **Subir todo como `latest`**: dificulta los rollbacks. Usa tags de versión y trata `latest` como un alias móvil, nunca como tu única referencia.
 - **`push` muy lento siempre**: si reconstruyes cambiando capas tempranas, invalidas la cache y subes capas grandes cada vez. Ordena el Dockerfile para que lo que cambia poco quede abajo.
 
 > Idea clave: una imagen se identifica por `[registro/]usuario/repositorio:tag`. `tag` crea nombres sin copiar datos, y `push`/`pull` mueven solo las capas que faltan contra el registro (Docker Hub por defecto).

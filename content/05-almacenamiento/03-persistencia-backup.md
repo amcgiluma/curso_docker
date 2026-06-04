@@ -2,16 +2,16 @@
 title: "Persistencia, backup y restore de volumes"
 slug: "persistencia-backup"
 order: 3
-summary: "Estrategias de persistencia y como hacer backup y restore de un volume."
+summary: "Estrategias de persistencia y cómo hacer backup y restore de un volume."
 ---
 
 # Persistencia, backup y restore de volumes
 
-Persistir datos es solo la mitad del trabajo: tambien necesitas poder **copiarlos** y **restaurarlos**. Aqui veras el patron clasico para hacer backup de un volume usando un contenedor auxiliar.
+Persistir datos es solo la mitad del trabajo: también necesitas poder **copiarlos** y **restaurarlos**. Aquí verás el patrón clásico para hacer backup de un volume usando un contenedor auxiliar.
 
-## Teoria
+## Teoría
 
-Un volume vive en el host, pero no siempre es comodo (ni portable) copiar `/var/lib/docker/volumes` a mano. El patron recomendado es lanzar un **contenedor temporal** que:
+Un volume vive en el host, pero no siempre es cómodo (ni portable) copiar `/var/lib/docker/volumes` a mano. El patrón recomendado es lanzar un **contenedor temporal** que:
 
 1. Monta el volume que quieres respaldar (en solo lectura, por seguridad).
 2. Monta una carpeta del host donde dejar el archivo de backup.
@@ -19,13 +19,13 @@ Un volume vive en el host, pero no siempre es comodo (ni portable) copiar `/var/
 
 Para restaurar haces lo inverso: montas el volume destino y el tar, y descomprimes dentro.
 
-Buenas practicas de persistencia:
+Buenas prácticas de persistencia:
 
 - Un volume **por servicio con estado** (una base de datos, un servidor de ficheros, etc.).
 - Backups **consistentes**: para bases de datos, lo ideal es parar el contenedor o usar el dump nativo del motor (p. ej. `pg_dump`) en vez de copiar ficheros en caliente.
 - Versiona y prueba tus backups: un backup que no sabes restaurar no es un backup.
 
-> El truco de usar `alpine` con `tar` funciona en cualquier host porque no depende de herramientas instaladas en tu maquina, solo de Docker.
+> El truco de usar `alpine` con `tar` funciona en cualquier host porque no depende de herramientas instaladas en tu máquina, solo de Docker.
 
 ## Manos a la obra
 
@@ -69,14 +69,14 @@ registro-1
 
 ## Flags y variantes
 
-| Elemento | Que hace |
+| Elemento | Qué hace |
 | --- | --- |
 | `-v db-data:/data:ro` | Monta el volume de origen en solo lectura para el backup |
 | `-v "$(pwd)":/backup` | Carpeta del host donde se guarda/lee el `.tar.gz` |
 | `tar czf <archivo> -C /data .` | Comprime el contenido del volume (`-C` cambia de directorio) |
 | `tar xzf <archivo> -C /data` | Extrae el backup dentro del volume destino |
 | `docker run --rm` | El contenedor auxiliar se autodestruye al terminar |
-| `pg_dump` / `mysqldump` | Para bases de datos, dump logico mas seguro que copiar ficheros |
+| `pg_dump` / `mysqldump` | Para bases de datos, dump lógico más seguro que copiar ficheros |
 
 ### Variante: copiar ficheros sueltos con `docker cp`
 
@@ -87,7 +87,7 @@ docker cp <contenedor>:/ruta/dentro ./destino-host
 docker cp ./fichero-host <contenedor>:/ruta/dentro
 ```
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Crea el volume y mete datos: `docker volume create vol-test && docker run --rm -v vol-test:/data alpine sh -c "echo hola > /data/f.txt"`.
 2. Haz backup: `docker run --rm -v vol-test:/data:ro -v "$(pwd)":/backup alpine tar czf /backup/vol-test.tar.gz -C /data .`.
@@ -102,4 +102,4 @@ docker cp ./fichero-host <contenedor>:/ruta/dentro
 - **Restaurar sobre datos existentes**: si extraes el tar en un volume que ya tiene datos, los puedes sobrescribir o mezclar. Restaura siempre en un volume limpio y luego cambia el montaje.
 - **Olvidar `-C /data`**: sin `-C`, `tar` guarda rutas absolutas y al restaurar no caen donde esperas.
 
-> Idea clave: el patron "contenedor `alpine` + `tar` + dos montajes (volume y carpeta del host)" te permite backup y restore portables de cualquier volume; para bases de datos prefiere el dump nativo del motor.
+> Idea clave: el patrón "contenedor `alpine` + `tar` + dos montajes (volume y carpeta del host)" te permite backup y restore portables de cualquier volume; para bases de datos prefiere el dump nativo del motor.

@@ -7,15 +7,15 @@ summary: "Levantar un registro local con registry:2, hacer push/pull y configura
 
 # Tu propio registro privado con registry:2
 
-No siempre quieres (o puedes) publicar en Docker Hub. Con la imagen oficial `registry:2` levantas tu propio registro en segundos para distribuir imagenes dentro de tu red o tu maquina.
+No siempre quieres (o puedes) publicar en Docker Hub. Con la imagen oficial `registry:2` levantas tu propio registro en segundos para distribuir imágenes dentro de tu red o tu máquina.
 
-## Teoria
+## Teoría
 
 `registry:2` es la implementacion de referencia del **Docker Registry HTTP API V2**. Es el mismo motor que hay detras de muchos registros gestionados. Caracteristicas:
 
 - Escucha en el puerto **5000** por defecto.
-- Guarda las imagenes en `/var/lib/registry` dentro del contenedor: necesitas un **volumen** para que no se pierdan al recrearlo.
-- Por defecto **no tiene autenticacion ni TLS**. Sirve para una LAN de confianza o pruebas locales; para algo serio hay que anadir TLS y/o auth.
+- Guarda las imágenes en `/var/lib/registry` dentro del contenedor: necesitas un **volumen** para que no se pierdan al recrearlo.
+- Por defecto **no tiene autenticacion ni TLS**. Sirve para una LAN de confianza o pruebas locales; para algo serio hay que añadir TLS y/o auth.
 
 Para empujar una imagen a tu registro, su nombre debe incluir el **host:puerto** del registro:
 
@@ -78,20 +78,20 @@ localhost:5000/alpine:3.20
 
 ## Flags y variantes
 
-| Flag / accion | Para que sirve |
+| Flag / acción | Para qué sirve |
 | --- | --- |
 | `-p 5000:5000` | Publica el puerto del registro en el host |
-| `-v registry-data:/var/lib/registry` | Persiste las imagenes en un volumen |
+| `-v registry-data:/var/lib/registry` | Persiste las imágenes en un volumen |
 | `--restart always` | Levanta el registro al reiniciar Docker |
 | `-e REGISTRY_STORAGE_DELETE_ENABLED=true` | Permite borrar manifests via API |
-| `-e REGISTRY_HTTP_ADDR=:5000` | Cambia la direccion/puerto de escucha |
+| `-e REGISTRY_HTTP_ADDR=:5000` | Cambia la dirección/puerto de escucha |
 | `GET /v2/_catalog` | Lista los repositorios del registro |
 | `GET /v2/<repo>/tags/list` | Lista los tags de un repositorio |
 | `localhost:5000/<img>` | Prefijo de nombre para apuntar al registro local |
 
-### Acceder desde otra maquina (registro "inseguro")
+### Acceder desde otra máquina (registro "inseguro")
 
-Si accedes por IP sin TLS, los demas Docker lo rechazan salvo que lo marques como inseguro en `/etc/docker/daemon.json`:
+Si accedes por IP sin TLS, los demás Docker lo rechazan salvo que lo marques como inseguro en `/etc/docker/daemon.json`:
 
 ```json
 {
@@ -101,10 +101,10 @@ Si accedes por IP sin TLS, los demas Docker lo rechazan salvo que lo marques com
 
 Tras editarlo, reinicia el daemon (`sudo systemctl restart docker`). En Docker Desktop se configura en *Settings -> Docker Engine*.
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Arranca el registro: `docker run -d --name registry -p 5000:5000 -v registry-data:/var/lib/registry registry:2`.
-2. Baja una imagen pequena: `docker pull alpine:3.20`.
+2. Baja una imagen pequeña: `docker pull alpine:3.20`.
 3. Etiquetala: `docker tag alpine:3.20 localhost:5000/alpine:3.20` y subela con `docker push`.
 4. Consulta `curl http://localhost:5000/v2/_catalog` y `curl http://localhost:5000/v2/alpine/tags/list`.
 5. Borra la imagen local y recuperala con `docker pull localhost:5000/alpine:3.20`.
@@ -112,9 +112,9 @@ Tras editarlo, reinicia el daemon (`sudo systemctl restart docker`). En Docker D
 
 ## Errores comunes
 
-- **`http: server gave HTTP response to HTTPS client`**: intentas hablar con un registro sin TLS desde otra maquina. Anade su `host:puerto` a `insecure-registries` o configura TLS.
-- **Las imagenes desaparecen al recrear el contenedor**: olvidaste el volumen en `/var/lib/registry`. Sin el, los datos viven en la capa efimera del contenedor.
-- **`connection refused` en push**: el registro no esta arrancado o el puerto no esta publicado. Verifica con `docker ps` y `curl http://localhost:5000/v2/`.
-- **Creer que `registry:2` trae login**: no por defecto. Para auth basica hay que montar un fichero `htpasswd` y definir las variables `REGISTRY_AUTH`.
+- **`http: server gave HTTP response to HTTPS client`**: intentas hablar con un registro sin TLS desde otra máquina. Añade su `host:puerto` a `insecure-registries` o configura TLS.
+- **Las imágenes desaparecen al recrear el contenedor**: olvidaste el volumen en `/var/lib/registry`. Sin el, los datos viven en la capa efímera del contenedor.
+- **`connection refused` en push**: el registro no está arrancado o el puerto no está publicado. Verifica con `docker ps` y `curl http://localhost:5000/v2/`.
+- **Creer que `registry:2` trae login**: no por defecto. Para auth básica hay que montar un fichero `htpasswd` y definir las variables `REGISTRY_AUTH`.
 
-> Idea clave: `registry:2` te da un registro propio en el puerto 5000. Persiste siempre `/var/lib/registry` con un volumen, prefija las imagenes con `host:puerto/` y recuerda que sin TLS/auth solo es apto para redes de confianza.
+> Idea clave: `registry:2` te da un registro propio en el puerto 5000. Persiste siempre `/var/lib/registry` con un volumen, prefija las imágenes con `host:puerto/` y recuerda que sin TLS/auth solo es apto para redes de confianza.

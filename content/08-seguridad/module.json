@@ -2,5 +2,5 @@
   "slug": "seguridad",
   "title": "Seguridad",
   "order": 8,
-  "summary": "Hardening: usuario no root, capabilities, secretos, escaneo y limites."
+  "summary": "Hardening: usuario no root, capabilities, secretos, escaneo y límites."
 }

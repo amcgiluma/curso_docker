@@ -7,19 +7,19 @@ summary: "Mapear puertos con -p y -P, EXPOSE frente a publish y bind a 127.0.0.1
 
 # Publicacion de puertos
 
-Para que un servicio dentro de un contenedor sea accesible desde el host (o desde fuera), tienes que **publicar** su puerto. Aqui veras `-p`, `-P`, los mapeos exactos y la diferencia entre `EXPOSE` y publicar.
+Para que un servicio dentro de un contenedor sea accesible desde el host (o desde fuera), tienes que **publicar** su puerto. Aquí verás `-p`, `-P`, los mapeos exactos y la diferencia entre `EXPOSE` y publicar.
 
-## Teoria
+## Teoría
 
-Un contenedor en la red bridge tiene su propia IP privada. Por defecto, sus puertos **no** son accesibles desde el host. Publicar un puerto crea una regla que reenvia el trafico del host al contenedor.
+Un contenedor en la red bridge tiene su propia IP privada. Por defecto, sus puertos **no** son accesibles desde el host. Publicar un puerto crea una regla que reenvía el trafico del host al contenedor.
 
 - **`-p <host>:<contenedor>`**: mapea un puerto concreto del host a un puerto del contenedor.
 - **`-P` (mayuscula)**: publica **todos** los puertos declarados con `EXPOSE` en la imagen, asignandoles puertos altos aleatorios del host.
-- **`EXPOSE`** (en el Dockerfile): es solo **documentacion / metadato**. NO publica nada por si mismo; indica que el servicio escucha en ese puerto. `-P` y algunas herramientas lo usan como referencia.
+- **`EXPOSE`** (en el Dockerfile): es solo **documentación / metadato**. NO publica nada por si mismo; indica que el servicio escucha en ese puerto. `-P` y algunas herramientas lo usan como referencia.
 
 Formato completo del mapeo: `[ip-host:]puerto-host:puerto-contenedor[/protocolo]`.
 
-> Seguridad: por defecto `-p 8080:80` escucha en **todas** las interfaces del host (`0.0.0.0`), quedando accesible desde la red. Para limitarlo a tu maquina usa `-p 127.0.0.1:8080:80`.
+> Seguridad: por defecto `-p 8080:80` escucha en **todas** las interfaces del host (`0.0.0.0`), quedando accesible desde la red. Para limitarlo a tu máquina usa `-p 127.0.0.1:8080:80`.
 
 ## Manos a la obra
 
@@ -56,7 +56,7 @@ web-auto: 0.0.0.0:32768->80/tcp, [::]:32768->80/tcp
 
 ## Flags y variantes
 
-| Flag / forma | Que hace |
+| Flag / forma | Qué hace |
 | --- | --- |
 | `-p 8080:80` | Host 8080 -> contenedor 80 (todas las interfaces) |
 | `-p 127.0.0.1:8080:80` | Solo accesible desde localhost del host |
@@ -74,12 +74,12 @@ FROM nginx:alpine
 EXPOSE 80
 ```
 
-`EXPOSE 80` no abre nada hacia el host. Sigues necesitando `-p`/`-P` al ejecutar. Su utilidad: documentar la imagen y permitir que `-P` sepa que publicar.
+`EXPOSE 80` no abre nada hacia el host. Sigues necesitando `-p`/`-P` al ejecutar. Su útilidad: documentar la imagen y permitir que `-P` sepa que publicar.
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Lanza `docker run -d --name n1 -p 8080:80 nginx:alpine`.
-2. Abre `http://localhost:8080` en el navegador (o `curl http://localhost:8080`): veras la pagina de bienvenida de nginx.
+2. Abre `http://localhost:8080` en el navegador (o `curl http://localhost:8080`): verás la pagina de bienvenida de nginx.
 3. Comprueba el mapeo con `docker port n1`.
 4. Lanza otro con `-p 127.0.0.1:8081:80` y verifica que `docker port` muestra `127.0.0.1`.
 5. Prueba `-P`: `docker run -d --name n2 -P nginx:alpine` y mira el puerto aleatorio con `docker ps`. Limpia con `docker rm -f n1 n2`.
@@ -91,4 +91,4 @@ EXPOSE 80
 - **El servicio escucha solo en `127.0.0.1` dentro del contenedor**: si la app escucha en localhost del contenedor, el mapeo de puertos no llega a ella. Configura la app para escuchar en `0.0.0.0`.
 - **Expuse a toda la red sin querer**: usa `-p 127.0.0.1:<host>:<contenedor>` para no exponer servicios sensibles a la LAN.
 
-> Idea clave: `EXPOSE` solo documenta; para acceder de verdad publica con `-p host:contenedor` (o `-P` para los `EXPOSE` en puertos aleatorios), y limita la exposicion con `127.0.0.1:` cuando el servicio no deba salir del host.
+> Idea clave: `EXPOSE` solo documenta; para acceder de verdad publica con `-p host:contenedor` (o `-P` para los `EXPOSE` en puertos aleatorios), y limita la exposición con `127.0.0.1:` cuando el servicio no deba salir del host.

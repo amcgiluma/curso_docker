@@ -2,5 +2,5 @@
   "slug": "dockerfiles",
   "title": "Dockerfiles a fondo",
   "order": 3,
-  "summary": "Todas las instrucciones de Dockerfile y como construir imagenes."
+  "summary": "Todas las instrucciones de Dockerfile y cómo construir imágenes."
 }

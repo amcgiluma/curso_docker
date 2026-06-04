@@ -1,0 +1,6 @@
+.git
+.buildcache
+Dockerfile*
+README.md
+*.tar
+tmp

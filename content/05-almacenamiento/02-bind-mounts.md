@@ -7,19 +7,19 @@ summary: "Montar rutas del host con bind mounts, datos en RAM con tmpfs y montaj
 
 # Bind mounts y tmpfs
 
-Ademas de los volumes gestionados por Docker, puedes montar **una ruta del host** dentro del contenedor (bind mount) o un sistema de ficheros **en memoria** que no toca disco (tmpfs). Cada uno tiene su caso de uso.
+Además de los volumes gestionados por Docker, puedes montar **una ruta del host** dentro del contenedor (bind mount) o un sistema de ficheros **en memoria** que no toca disco (tmpfs). Cada uno tiene su caso de uso.
 
-## Teoria
+## Teoría
 
 | Tipo | Donde viven los datos | Caso de uso tipico |
 | --- | --- | --- |
-| **volume** | Gestionado por Docker (`/var/lib/docker/volumes`) | Datos de produccion, bases de datos |
-| **bind mount** | Una ruta concreta de tu host | Desarrollo: montar tu codigo en el contenedor |
+| **volume** | Gestionado por Docker (`/var/lib/docker/volumes`) | Datos de producción, bases de datos |
+| **bind mount** | Una ruta concreta de tu host | Desarrollo: montar tu código en el contenedor |
 | **tmpfs** | RAM del host (no se escribe a disco) | Datos sensibles o temporales que no deben persistir |
 
-**Bind mount**: enlaza un directorio o fichero del host con una ruta del contenedor. Es ideal en desarrollo porque editas el codigo en tu maquina y el cambio se ve dentro del contenedor al instante. Aviso: el bind mount **oculta** lo que hubiera en esa ruta del contenedor y monta encima el contenido del host (no copia el contenido previo, a diferencia de un volume).
+**Bind mount**: enlaza un directorio o fichero del host con una ruta del contenedor. Es ideal en desarrollo porque editas el código en tu máquina y el cambio se ve dentro del contenedor al instante. Aviso: el bind mount **oculta** lo que hubiera en esa ruta del contenedor y monta encima el contenido del host (no copia el contenido previo, a diferencia de un volume).
 
-**tmpfs**: monta un sistema de ficheros en memoria. Cuando el contenedor se para, los datos desaparecen. Util para ficheros temporales o secretos que no quieres que toquen el disco. Solo funciona en contenedores Linux.
+**tmpfs**: monta un sistema de ficheros en memoria. Cuando el contenedor se para, los datos desaparecen. Útil para ficheros temporales o secretos que no quieres que toquen el disco. Solo funciona en contenedores Linux.
 
 > En Windows/PowerShell, usa la ruta absoluta del host. Por ejemplo `-v C:\Users\juanm\proyecto:/app` o, dentro de WSL, `/mnt/c/Users/juanm/proyecto:/app`. Con `--mount` el `source` siempre debe ser una ruta absoluta.
 
@@ -57,7 +57,7 @@ tmpfs                   <size>         0    <size>   0% /cache
 
 ## Flags y variantes
 
-| Flag | Que hace |
+| Flag | Qué hace |
 | --- | --- |
 | `-v <ruta-host>:<ruta-contenedor>` | Bind mount (la ruta de host debe ser absoluta) |
 | `-v <ruta-host>:<ruta-contenedor>:ro` | Bind mount en solo lectura |
@@ -65,10 +65,10 @@ tmpfs                   <size>         0    <size>   0% /cache
 | `--mount type=bind,...,readonly` | Bind mount de solo lectura con sintaxis larga |
 | `--tmpfs <ruta>` | Monta un tmpfs simple en esa ruta |
 | `--mount type=tmpfs,dst=<ruta>` | tmpfs con sintaxis larga |
-| `--mount type=tmpfs,dst=<ruta>,tmpfs-size=64m` | Limita el tamano del tmpfs |
+| `--mount type=tmpfs,dst=<ruta>,tmpfs-size=64m` | Limita el tamaño del tmpfs |
 | `--mount type=tmpfs,dst=<ruta>,tmpfs-mode=1770` | Define permisos del tmpfs |
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Crea una carpeta de prueba con un fichero: `mkdir demo && echo "soy del host" > demo/dato.txt`.
 2. Montala en un contenedor y leela: `docker run --rm -v "$(pwd)/demo":/app alpine cat /app/dato.txt`.
@@ -78,8 +78,8 @@ tmpfs                   <size>         0    <size>   0% /cache
 ## Errores comunes
 
 - **`docker: Error response from daemon: invalid mount config: bind source path does not exist`**: con `--mount type=bind` la ruta de origen tiene que existir en el host. Crea la carpeta o revisa la ruta.
-- **El contenedor "no ve" el contenido que esperaba**: un bind mount tapa lo que hubiera en esa ruta del contenedor. Si necesitas conservar el contenido de la imagen, usa un volume (que si lo copia) o monta en otra ruta.
+- **El contenedor "no ve" el contenido qué esperaba**: un bind mount tapa lo que hubiera en esa ruta del contenedor. Si necesitas conservar el contenido de la imagen, usa un volume (que si lo copia) o monta en otra ruta.
 - **Permisos / "Permission denied" al escribir**: el usuario del contenedor puede no tener permisos sobre los ficheros del host. Ajusta `--user` o los permisos del host.
-- **Rutas relativas con `-v`**: `-v ./demo:/app` no siempre funciona como esperas; usa ruta absoluta (`$(pwd)/demo` o `${PWD}/demo`).
+- **Rutas relativas con `-v`**: `-v ./demo:/app` no siempre funciona cómo esperas; usa ruta absoluta (`$(pwd)/demo` o `${PWD}/demo`).
 
-> Idea clave: usa **bind mounts** para desarrollar con tu codigo en vivo, **tmpfs** para datos temporales que nunca tocan disco, y anade `:ro`/`readonly` siempre que el contenedor no necesite escribir.
+> Idea clave: usa **bind mounts** para desarrollar con tu código en vivo, **tmpfs** para datos temporales que nunca tocan disco, y añade `:ro`/`readonly` siempre que el contenedor no necesite escribir.

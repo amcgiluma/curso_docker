@@ -1,13 +1,13 @@
 # Python app (FastAPI, multi-stage + venv + non-root + healthcheck)
 
-API minima con FastAPI servida por Uvicorn: `/` devuelve `hola docker` y `/health` el estado.
+API mínima con FastAPI servida por Uvicorn: `/` devuelve `hola docker` y `/health` el estado.
 
 ## Que demuestra
 
 - **Build multi-stage con venv**: la etapa `builder` crea `/opt/venv` con las dependencias y la etapa `runtime` solo lo copia (no arrastra cache de pip).
 - **Usuario non-root con UID/GID fijos**: `appuser` (1001:1001) creado explicitamente.
 - **HEALTHCHECK** sin `curl`: usa `urllib` de la propia stdlib de Python.
-- **Imagen pequena**: base `python:3.13-slim`.
+- **Imagen pequeña**: base `python:3.13-slim`.
 
 ## Construir
 

@@ -2,47 +2,68 @@
 title: "Cache export/import y buildx bake"
 slug: "bake"
 order: 4
-summary: "Compartir cache con --cache-to/--cache-from y orquestar builds con docker buildx bake."
+summary: "Compartir caché con --cache-to/--cache-from y orquestar builds con docker buildx bake."
 ---
 
 # Cache export/import y buildx bake
 
-Dos piezas finales del build avanzado: **exportar e importar la cache** para acelerar builds en CI o entre maquinas, y **`docker buildx bake`**, que define varios builds en un fichero declarativo y los lanza juntos.
+Dos piezas finales del build avanzado: **exportar e importar la caché** para acelerar builds en CI o entre máquinas, y **`docker buildx bake`**, que define varios builds en un fichero declarativo y los lanza juntos.
 
-## Teoria
+## Teoría
 
-**Cache export/import**: BuildKit guarda cache localmente, pero en CI cada ejecucion empieza limpia. Con `--cache-to` exportas la cache (a un registro o a disco) y con `--cache-from` la reutilizas en el siguiente build, evitando rehacer pasos.
+**Cache export/import**: BuildKit guarda caché localmente, pero en CI cada ejecución empieza limpia. Con `--cache-to` exportas la caché (a un registro o a disco) y con `--cache-from` la reútilizas en el siguiente build, evitando rehacer pasos.
 
-Tipos de cache habituales:
+Tipos de caché habituales:
 
-- **`type=registry`**: guarda/lee la cache en un registro (ideal para CI; persiste entre runners).
-- **`type=local`**: guarda/lee la cache en un directorio del host.
-- **`type=gha`**: cache de GitHub Actions.
-- **`mode=max`**: exporta cache de **todas** las etapas (incluidas las intermedias del multi-stage); `mode=min` (por defecto) solo las de la imagen final.
+- **`type=registry`**: guarda/lee la caché en un registro (ideal para CI; persiste entre runners).
+- **`type=local`**: guarda/lee la caché en un directorio del host.
+- **`type=gha`**: caché de GitHub Actions.
+- **`mode=max`**: exporta caché de **todas** las etapas (incluidas las intermedias del multi-stage); `mode=min` (por defecto) solo las de la imagen final.
 
-**`docker buildx bake`**: en vez de invocar `docker buildx build` muchas veces, defines los objetivos (`target`) en un fichero `docker-bake.hcl` (o `compose.yaml`) y los construyes con un solo comando. Permite reutilizar configuracion, variables y grupos de targets.
+**`docker buildx bake`**: en vez de invocar `docker buildx build` muchas veces, defines los objetivos (`target`) en un fichero `docker-bake.hcl` (o `compose.yaml`) y los construyes con un solo comando. Permite reútilizar configuración, variables y grupos de targets.
 
-> En CI, `--cache-to type=registry,mode=max` + `--cache-from type=registry` suele ser la combinacion mas efectiva: la cache vive en el registro y se comparte entre ejecuciones y maquinas.
+El ejemplo completo está en `examples/buildx-bake/` e incluye `Dockerfile`, `Dockerfile.worker` y `docker-bake.hcl`.
+
+> En CI, `--cache-to type=registry,mode=max` + `--cache-from type=registry` suele ser la combinación más efectiva: la caché vive en el registro y se comparte entre ejecuciónes y máquinas.
 
 ## Manos a la obra
 
-Exporta la cache a un registro mientras construyes:
+Entra en el ejemplo:
+
+```bash
+cd examples/buildx-bake
+```
+
+Exporta la caché local mientras construyes:
 
 ```compare
 # CMD
 docker buildx build \
-  --cache-to type=registry,ref=<usuario>/miapp:buildcache,mode=max \
-  --cache-from type=registry,ref=<usuario>/miapp:buildcache \
-  -t <usuario>/miapp:1.0 \
-  --push .
+  --cache-to type=local,dest=.buildcache \
+  -t curso/bake-app:cache \
+  --load .
 # OUT
- => importing cache manifest from <usuario>/miapp:buildcache
- => exporting to image
- => => exporting cache to registry
- => => pushing manifest for docker.io/<usuario>/miapp:1.0
+[+] Building ...
+ => exporting to docker image format
+ => => naming to docker.io/curso/bake-app:cache
+ => => exporting cache to client directory
 ```
 
-Un fichero `docker-bake.hcl` con dos targets y un grupo:
+Reconstruye importando esa caché:
+
+```compare
+# CMD
+docker buildx build \
+  --cache-from type=local,src=.buildcache \
+  -t curso/bake-app:cache \
+  --load .
+# OUT
+[+] Building ...
+ => importing cache manifest from local directory
+ => CACHED [2/2] RUN echo "Construyendo app..."
+```
+
+El `docker-bake.hcl` del ejemplo define dos targets y un grupo:
 
 ```hcl
 group "default" {
@@ -52,14 +73,34 @@ group "default" {
 target "app" {
   context    = "."
   dockerfile = "Dockerfile"
-  tags       = ["miapp:1.0"]
-  platforms  = ["linux/amd64", "linux/arm64"]
+  tags       = ["curso/bake-app:1.0"]
+  platforms  = ["linux/amd64"]
 }
 
 target "worker" {
   context    = "."
   dockerfile = "Dockerfile.worker"
-  tags       = ["miworker:1.0"]
+  tags       = ["curso/bake-worker:1.0"]
+  platforms  = ["linux/amd64"]
+}
+```
+
+Mira la configuración resuelta antes de construir:
+
+```compare
+# CMD
+docker buildx bake --print
+# OUT
+{
+  "group": {
+    "default": {
+      "targets": ["app", "worker"]
+    }
+  },
+  "target": {
+    "app": { ... },
+    "worker": { ... }
+  }
 }
 ```
 
@@ -67,7 +108,7 @@ Lanza todos los targets del grupo con un comando:
 
 ```compare
 # CMD
-docker buildx bake
+docker buildx bake --load
 # OUT
 [+] Building 2/2
  ✔ app     Built
@@ -78,7 +119,7 @@ Construye solo un target concreto:
 
 ```compare
 # CMD
-docker buildx bake app
+docker buildx bake app --load
 # OUT
 [+] Building 1/1
  ✔ app  Built
@@ -86,32 +127,33 @@ docker buildx bake app
 
 ## Flags y variantes
 
-| Elemento | Que hace |
+| Elemento | Qué hace |
 | --- | --- |
-| `--cache-to type=registry,ref=<img>,mode=max` | Exporta la cache (todas las etapas) a un registro |
-| `--cache-to type=local,dest=<dir>` | Exporta la cache a un directorio del host |
-| `--cache-from type=registry,ref=<img>` | Importa cache desde un registro |
-| `--cache-from type=local,src=<dir>` | Importa cache desde un directorio |
+| `--cache-to type=registry,ref=<img>,mode=max` | Exporta la caché (todas las etapas) a un registro |
+| `--cache-to type=local,dest=<dir>` | Exporta la caché a un directorio del host |
+| `--cache-from type=registry,ref=<img>` | Importa caché desde un registro |
+| `--cache-from type=local,src=<dir>` | Importa caché desde un directorio |
 | `mode=min` / `mode=max` | Exporta solo la imagen final / todas las etapas |
 | `docker buildx bake` | Construye el grupo `default` del fichero bake |
 | `docker buildx bake <target>` | Construye un target concreto |
-| `docker buildx bake -f <fichero>` | Usa un fichero bake especifico |
+| `docker buildx bake -f <fichero>` | Usa un fichero bake específico |
 | `docker buildx bake --print` | Muestra la config resuelta sin construir |
 | `docker buildx bake --push` / `--load` | Publica / carga el resultado |
 
-## Pruebalo tu
+## Pruébalo tú
 
-1. Construye una vez exportando cache local: `docker buildx build --cache-to type=local,dest=.buildcache -t miapp:1.0 --load .`.
-2. Borra la imagen y reconstruye importando la cache: `docker buildx build --cache-from type=local,src=.buildcache -t miapp:1.0 --load .`; debe reutilizar pasos.
-3. Crea un `docker-bake.hcl` con el target `app` del ejemplo.
-4. Ejecuta `docker buildx bake --print` para ver la configuracion resuelta (sin construir).
-5. Lanza `docker buildx bake app` y comprueba que genera la imagen `miapp:1.0`.
+1. Entra en `examples/buildx-bake`.
+2. Ejecuta `docker buildx bake --print` para validar la configuración.
+3. Construye con caché local: `docker buildx build --cache-to type=local,dest=.buildcache -t curso/bake-app:cache --load .`.
+4. Reconstruye importando la caché: `docker buildx build --cache-from type=local,src=.buildcache -t curso/bake-app:cache --load .`.
+5. Lanza `docker buildx bake --load` y comprueba que genera `curso/bake-app:1.0` y `curso/bake-worker:1.0`.
+6. Ejecuta ambos contenedores con `docker run --rm curso/bake-app:1.0` y `docker run --rm curso/bake-worker:1.0`.
 
 ## Errores comunes
 
-- **La cache no se reutiliza en CI**: usaste `type=local` pero el runner no conserva el directorio. Usa `type=registry` (o `type=gha` en GitHub Actions) para que persista entre ejecuciones.
-- **`mode=max` requiere builder docker-container**: la exportacion de cache completa no funciona con el builder `default`. Crea uno con `--driver docker-container`.
-- **`docker buildx bake: no such target`**: el nombre no existe en el fichero o no esta en el grupo `default`. Revisa con `docker buildx bake --print`.
-- **`--cache-to` a un registro sin permisos**: necesitas `docker login` y permiso de escritura en ese repositorio de cache.
+- **La caché no se reútiliza en CI**: usaste `type=local` pero el runner no conserva el directorio. Usa `type=registry` (o `type=gha` en GitHub Actions) para que persista entre ejecuciónes.
+- **`mode=max` requiere builder docker-container**: la exportación de caché completa no funciona con el builder `default`. Crea uno con `--driver docker-container`.
+- **`docker buildx bake: no such target`**: el nombre no existe en el fichero o no está en el grupo `default`. Revisa con `docker buildx bake --print`.
+- **`--cache-to` a un registro sin permisos**: necesitas `docker login` y permiso de escritura en ese repositorio de caché.
 
-> Idea clave: comparte cache entre builds con `--cache-from`/`--cache-to` (usa `type=registry,mode=max` en CI) y orquesta multiples builds de forma declarativa con `docker buildx bake` y su fichero `docker-bake.hcl`.
+> Idea clave: comparte caché entre builds con `--cache-from`/`--cache-to` (usa `type=registry,mode=max` en CI) y orquesta múltiples builds de forma declarativa con `docker buildx bake` y su fichero `docker-bake.hcl`.

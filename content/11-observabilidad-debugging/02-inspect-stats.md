@@ -7,13 +7,13 @@ summary: "docker inspect con plantillas Go (--format), stats en vivo y df para e
 
 # Radiografia del contenedor: inspect, stats y df
 
-`docker inspect` te da TODA la configuracion y estado de un objeto en JSON; `docker stats` te muestra el consumo en vivo; y `docker system df` te dice cuanto disco esta gastando Docker. Con estos tres tienes una radiografia completa.
+`docker inspect` te da TODA la configuración y estado de un objeto en JSON; `docker stats` te muestra el consumo en vivo; y `docker system df` te dice cuánto disco está gastando Docker. Con estos tres tienes una radiografia completa.
 
-## Teoria
+## Teoría
 
-`docker inspect` devuelve un array JSON con un volcado enorme de informacion: configuracion, red, montajes, estado, healthcheck, etc. En vez de leerlo entero, usa **`--format`** con plantillas **Go** para extraer justo el campo que quieres.
+`docker inspect` devuelve un array JSON con un volcado enorme de información: configuración, red, montajes, estado, healthcheck, etc. En vez de leerlo entero, usa **`--format`** con plantillas **Go** para extraer justo el campo que quieres.
 
-Sintaxis basica de las plantillas:
+Sintaxis básica de las plantillas:
 
 - `{{.Campo}}` accede a un campo (respeta mayusculas, p. ej. `.State.Running`).
 - `{{json .Campo}}` lo imprime como JSON.
@@ -22,11 +22,11 @@ Sintaxis basica de las plantillas:
 
 | Comando | Te dice |
 | --- | --- |
-| `docker inspect` | Configuracion y estado completos (JSON) |
+| `docker inspect` | Configuración y estado completos (JSON) |
 | `docker stats` | CPU, memoria, red y I/O en tiempo real |
-| `docker system df` | Espacio usado por imagenes, contenedores, volumenes y cache |
+| `docker system df` | Espacio usado por imágenes, contenedores, volúmenes y cache |
 
-> Nota: `docker inspect` sirve para casi cualquier objeto: contenedores, imagenes, volumenes, redes. Detecta el tipo, o puedes forzarlo con `--type`.
+> Nota: `docker inspect` sirve para casi cualquier objeto: contenedores, imágenes, volúmenes, redes. Detecta el tipo, o puedes forzarlo con `--type`.
 
 ## Manos a la obra
 
@@ -59,7 +59,7 @@ CONTAINER ID   NAME   CPU %   MEM USAGE / LIMIT   MEM %   NET I/O      BLOCK I/O
 20144abf3c11   web    0.00%   3.512MiB / 7.6GiB   0.05%   1.1kB / 0B   0B / 0B     3
 ```
 
-Revisa cuanto disco esta usando Docker y cuanto es reclamable:
+Revisa cuánto disco está usando Docker y cuánto es reclamable:
 
 ```compare
 # CMD
@@ -76,43 +76,43 @@ Build Cache     34      0        612.5MB   612.5MB (100%)
 
 ### `docker inspect`
 
-| Flag / plantilla | Para que sirve |
+| Flag / plantilla | Para qué sirve |
 | --- | --- |
 | `--format '{{.State.Running}}'` | Extrae un campo concreto |
 | `--format '{{json .Config.Env}}'` | Imprime un campo como JSON |
 | `--type container\|image\|volume\|network` | Fuerza el tipo de objeto |
-| `-s`, `--size` | Anade el tamano de la capa de escritura (contenedores) |
+| `-s`, `--size` | Añade el tamaño de la capa de escritura (contenedores) |
 | `{{range .Mounts}}{{.Source}}->{{.Destination}}{{end}}` | Lista los montajes |
 
 ### `docker stats`
 
-| Flag | Para que sirve |
+| Flag | Para qué sirve |
 | --- | --- |
 | `--no-stream` | Una sola captura en vez de refresco continuo |
-| `--all`, `-a` | Incluye tambien contenedores parados |
+| `--all`, `-a` | Incluye también contenedores parados |
 | `--format` | Personaliza columnas, p. ej. `'{{.Name}}: {{.MemUsage}}'` |
 
 ### `docker system df`
 
-| Flag | Para que sirve |
+| Flag | Para qué sirve |
 | --- | --- |
 | `-v`, `--verbose` | Desglose objeto por objeto |
 | (combinar con) `docker system prune` | Reclama el espacio marcado como reclaimable |
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Arranca `docker run -d --name web nginx:1.27-alpine`.
 2. Saca solo el estado: `docker inspect --format '{{.State.Status}}' web`.
 3. Obten la IP: `docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' web`.
 4. Lista variables de entorno como JSON: `docker inspect --format '{{json .Config.Env}}' web`.
 5. Mira recursos con `docker stats --no-stream` y luego en vivo con `docker stats` (sal con `Ctrl+C`).
-6. Reto: ejecuta `docker system df -v` y localiza la imagen mas grande; despues prueba `docker system df` antes y despues de un `docker image prune`.
+6. Reto: ejecuta `docker system df -v` y localiza la imagen más grande; después prueba `docker system df` antes y después de un `docker image prune`.
 
 ## Errores comunes
 
 - **`Template parsing error`**: nombre de campo mal escrito o sin respetar mayusculas. Es `.State.Running`, no `.state.running`. Mira primero el JSON completo para acertar con la ruta.
 - **`docker stats` parece colgado**: es normal, refresca en bucle. Usa `--no-stream` para una sola lectura en scripts.
-- **`MEM USAGE / LIMIT` muestra toda la RAM del host**: si no pusiste `--memory`, el limite es el del host. Define limites para ver porcentajes utiles.
-- **El disco no baja tras borrar imagenes**: el espacio puede estar en volumenes o build cache. Mira `docker system df -v` y usa el prune adecuado.
+- **`MEM USAGE / LIMIT` muestra toda la RAM del host**: si no pusiste `--memory`, el límite es el del host. Define límites para ver porcentajes útiles.
+- **El disco no baja tras borrar imágenes**: el espacio puede estar en volúmenes o build cache. Mira `docker system df -v` y usa el prune adecuado.
 
 > Idea clave: `docker inspect --format` con plantillas Go te da exactamente el dato que buscas sin leer todo el JSON; `docker stats` mide el consumo en vivo y `docker system df` te dice donde se va el disco.

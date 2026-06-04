@@ -16,7 +16,7 @@ Un contenedor `escritor` (alpine) escribe en dos sitios a la vez:
 docker compose up -d
 ```
 
-El contenedor anade una linea a `/data/registro.log` cada 5 segundos.
+El contenedor añade una línea a `/data/registro.log` cada 5 segundos.
 
 ## Comprobar el bind mount (en el host)
 
@@ -31,7 +31,7 @@ type bind\inicios.txt      # PowerShell / CMD
 ## Inspeccionar el volumen nombrado
 
 ```bash
-# Listar volumenes
+# Listar volúmenes
 docker volume ls
 
 # Ver detalle: driver y Mountpoint (donde lo guarda Docker)
@@ -46,7 +46,7 @@ docker exec vol-escritor cat /data/registro.log
 ## Probar la PERSISTENCIA (recrear el contenedor)
 
 ```bash
-# 1) Cuenta cuantas lineas hay ahora
+# 1) Cuenta cuantas líneas hay ahora
 docker exec vol-escritor wc -l /data/registro.log
 
 # 2) Destruye el contenedor (SIN borrar el volumen)
@@ -55,7 +55,7 @@ docker compose down
 # 3) Vuelve a levantarlo
 docker compose up -d
 
-# 4) El registro sigue ahi y continua creciendo -> datos PERSISTIDOS
+# 4) El registro sigue ahí y continua creciendo -> datos PERSISTIDOS
 docker exec vol-escritor cat /data/registro.log
 ```
 

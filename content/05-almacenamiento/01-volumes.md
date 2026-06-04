@@ -7,9 +7,9 @@ summary: "Crear, inspeccionar y limpiar volumes nombrados; -v frente a --mount."
 
 # Volumes nombrados
 
-El sistema de ficheros de un contenedor es efimero: cuando borras el contenedor, sus datos desaparecen. Los **volumes** son el mecanismo recomendado por Docker para guardar datos fuera del contenedor y que sobrevivan a su ciclo de vida.
+El sistema de ficheros de un contenedor es efímero: cuando borras el contenedor, sus datos desaparecen. Los **volumes** son el mecanismo recomendado por Docker para guardar datos fuera del contenedor y que sobrevivan a su ciclo de vida.
 
-## Teoria
+## Teoría
 
 Un **volume nombrado** es un directorio que gestiona el daemon de Docker. Vive fuera de la capa de escritura del contenedor (en Linux, bajo `/var/lib/docker/volumes/`) y por eso persiste aunque borres el contenedor.
 
@@ -20,9 +20,9 @@ Ventajas frente a guardar datos dentro del contenedor:
 - **Gestionado por Docker**: lo manipulas con `docker volume ...`, sin depender de rutas del host.
 - **Mejor rendimiento** que un bind mount en Docker Desktop (macOS/Windows).
 
-> Nota: si montas un volume **vacio** sobre un directorio del contenedor que ya tiene ficheros (por ejemplo el contenido de la imagen), Docker copia ese contenido al volume la primera vez. Con un bind mount eso NO ocurre.
+> Nota: si montas un volume **vacío** sobre un directorio del contenedor que ya tiene ficheros (por ejemplo el contenido de la imagen), Docker copia ese contenido al volume la primera vez. Con un bind mount eso NO ocurre.
 
-Los tres tipos de almacenamiento son: **volumes** (esta leccion), **bind mounts** y **tmpfs** (siguiente leccion).
+Los tres tipos de almacenamiento son: **volumes** (esta lección), **bind mounts** y **tmpfs** (siguiente lección).
 
 ## Manos a la obra
 
@@ -69,14 +69,14 @@ docker volume inspect datos-app
 
 ## Flags y variantes
 
-| Comando / flag | Que hace |
+| Comando / flag | Qué hace |
 | --- | --- |
 | `docker volume create <nombre>` | Crea un volume nombrado |
 | `docker volume ls` | Lista los volumes |
 | `docker volume ls -f dangling=true` | Solo volumes huerfanos (sin contenedor) |
 | `docker volume inspect <nombre>` | Muestra metadatos (mountpoint, driver, labels) |
 | `docker volume rm <nombre>` | Elimina un volume (debe estar sin usar) |
-| `docker volume prune` | Borra volumes anonimos sin usar |
+| `docker volume prune` | Borra volumes anónimos sin usar |
 | `docker volume prune -a` | Borra todos los volumes sin usar (incluidos nombrados) |
 | `-v <nombre>:<ruta>` | Sintaxis corta para montar un volume |
 | `-v <nombre>:<ruta>:ro` | Monta el volume en solo lectura |
@@ -87,9 +87,9 @@ docker volume inspect datos-app
 
 Ambas montan el mismo tipo de almacenamiento, pero se comportan distinto:
 
-- Con `-v`, si el volume **no existe**, Docker lo crea automaticamente.
-- Con `--mount`, si indicas `type=volume` y el volume no existe, tambien se crea; pero si usas `type=bind` y la ruta de origen no existe, falla (lo cual ayuda a detectar errores).
-- `--mount` es mas verboso pero mas legible y es la forma recomendada en scripts y produccion.
+- Con `-v`, si el volume **no existe**, Docker lo crea automáticamente.
+- Con `--mount`, si indicas `type=volume` y el volume no existe, también se crea; pero si usas `type=bind` y la ruta de origen no existe, falla (lo cual ayuda a detectar errores).
+- `--mount` es más verboso pero más legible y es la forma recomendada en scripts y producción.
 
 ```compare
 # CMD
@@ -98,18 +98,18 @@ docker run --rm --mount type=volume,src=datos-app,dst=/data alpine ls /data
 saludo.txt
 ```
 
-## Pruebalo tu
+## Pruébalo tú
 
 1. Crea un volume: `docker volume create curso-vol`.
-2. Lanza un contenedor que escriba un fichero: `docker run --rm -v curso-vol:/data alpine sh -c "date > /data/inicio.txt"`.
+2. Lanza un contenedor qué escriba un fichero: `docker run --rm -v curso-vol:/data alpine sh -c "date > /data/inicio.txt"`.
 3. Borra ese contenedor (ya se borro con `--rm`) y crea otro nuevo que lea el fichero: `docker run --rm -v curso-vol:/data alpine cat /data/inicio.txt`. Debe mostrar la fecha.
 4. Inspecciona el volume con `docker volume inspect curso-vol` y localiza el `Mountpoint`.
 5. Limpia: `docker volume rm curso-vol`.
 
 ## Errores comunes
 
-- **`Error response from daemon: remove curso-vol: volume is in use`**: hay un contenedor (aunque este parado) que usa el volume. Borralo primero con `docker rm <contenedor>` o usa `docker rm -v` para borrar contenedor y sus volumes anonimos.
-- **`docker volume prune` no borra mi volume nombrado**: por defecto `prune` solo elimina volumes **anonimos** sin usar. Para incluir los nombrados usa `docker volume prune -a`.
-- **Esperaba ver mis datos pero el directorio esta vacio**: confundir el nombre del volume o montar en una ruta distinta. Verifica con `docker volume inspect`.
+- **`Error response from daemon: remove curso-vol: volume is in use`**: hay un contenedor (aunqué este parado) que usa el volume. Borralo primero con `docker rm <contenedor>` o usa `docker rm -v` para borrar contenedor y sus volumes anónimos.
+- **`docker volume prune` no borra mi volume nombrado**: por defecto `prune` solo elimina volumes **anónimos** sin usar. Para incluir los nombrados usa `docker volume prune -a`.
+- **Esperaba ver mis datos pero el directorio está vacío**: confundir el nombre del volume o montar en una ruta distinta. Verifica con `docker volume inspect`.
 
 > Idea clave: usa volumes nombrados para cualquier dato que deba sobrevivir al contenedor; `docker volume create/ls/inspect/rm/prune` los gestiona, y `--mount` es la sintaxis preferida por ser explicita.
